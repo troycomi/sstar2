@@ -1,4 +1,4 @@
-#include "sstar2/vcf_file.hpp"
+#include "sstar2/vcf_file.h"
 #include <sstream>
 
 std::string VcfEntry::to_str(void){
@@ -17,6 +17,24 @@ short int VcfEntry::genotype(int individual){
     individual <<= 1;  // *= 2
 
     return haplotypes.at(individual) + haplotypes.at(individual + 1);
+}
+
+bool VcfEntry::any_haplotype(std::vector<int> individuals){
+    for (auto indiv : individuals){
+        indiv <<= 1;  // *=2
+        if (haplotypes[indiv] | haplotypes[indiv + 1])
+            return true;
+    }
+    return false;
+}
+
+int VcfEntry::count_haplotypes(std::vector<int> individuals){
+    int result = 0;
+    for (auto indiv : individuals){
+        indiv <<= 1;  // *=2
+        result += haplotypes[indiv] + haplotypes[indiv + 1];
+    }
+    return result;
 }
 
 int VcfFile::initialize_individuals(const std::string line,

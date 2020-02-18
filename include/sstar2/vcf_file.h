@@ -22,6 +22,8 @@ struct VcfEntry{
         chromosome(chrom), haplotypes(individuals * 2) {}
     std::string to_str();
     short int genotype(int individual);
+    bool any_haplotype(std::vector<int> individuals);
+    int count_haplotypes(std::vector<int> individuals);
 };
 
 class VcfFile{
@@ -31,8 +33,6 @@ class VcfFile{
     public:
         // map of individual to position in vcf file
         std::map <int, std::string> individual_map;
-
-        VcfFile();
 
         int initialize_individuals(const std::string line,
                 const std::set<std::string> individuals);
