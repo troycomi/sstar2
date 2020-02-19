@@ -44,21 +44,29 @@ TEST_F(VCF_Entry_Test, CanGetGenotype){
     ASSERT_THROW(entry_0.genotype(0), std::out_of_range);
 }
 
+TEST_F(VCF_Entry_Test, CanGetGTCode){
+    ASSERT_EQ(entry_5.gt_code(0), 0);
+    ASSERT_EQ(entry_5.gt_code(1), 2);
+    ASSERT_EQ(entry_5.gt_code(2), 3);
+    ASSERT_EQ(entry_5.gt_code(3), 1);
+    ASSERT_EQ(entry_5.gt_code(4), 0);
+}
+
 TEST_F(VCF_Entry_Test, CanFindAnyHaplotype){
-    ASSERT_FALSE(entry_5.any_haplotype(std::vector<int> {0}));
-    ASSERT_TRUE(entry_5.any_haplotype(std::vector<int> {0, 1}));
-    ASSERT_TRUE(entry_5.any_haplotype(std::vector<int> {0, 2}));
-    ASSERT_TRUE(entry_5.any_haplotype(std::vector<int> {0, 3, 4}));
-    ASSERT_FALSE(entry_5.any_haplotype(std::vector<int> {0, 4}));
-    ASSERT_FALSE(entry_5.any_haplotype(std::vector<int> {}));
+    ASSERT_FALSE(entry_5.any_haplotype(std::vector<unsigned int> {0}));
+    ASSERT_TRUE(entry_5.any_haplotype(std::vector<unsigned int> {0, 1}));
+    ASSERT_TRUE(entry_5.any_haplotype(std::vector<unsigned int> {0, 2}));
+    ASSERT_TRUE(entry_5.any_haplotype(std::vector<unsigned int> {0, 3, 4}));
+    ASSERT_FALSE(entry_5.any_haplotype(std::vector<unsigned int> {0, 4}));
+    ASSERT_FALSE(entry_5.any_haplotype(std::vector<unsigned int> {}));
 }
 
 TEST_F(VCF_Entry_Test, CanCountHaplotype){
-    ASSERT_EQ(entry_5.count_haplotypes(std::vector<int> {0}), 0);
-    ASSERT_EQ(entry_5.count_haplotypes(std::vector<int> {0, 1}), 1);
-    ASSERT_EQ(entry_5.count_haplotypes(std::vector<int> {0, 2}), 2);
-    ASSERT_EQ(entry_5.count_haplotypes(std::vector<int> {0, 3, 4}), 1);
-    ASSERT_EQ(entry_5.count_haplotypes(std::vector<int> {1, 2, 3, 4}), 4);
-    ASSERT_EQ(entry_5.count_haplotypes(std::vector<int> {0, 4}), 0);
-    ASSERT_EQ(entry_5.count_haplotypes(std::vector<int> {}), 0);
+    ASSERT_EQ(entry_5.count_haplotypes(std::vector<unsigned int> {0}), 0);
+    ASSERT_EQ(entry_5.count_haplotypes(std::vector<unsigned int> {0, 1}), 1);
+    ASSERT_EQ(entry_5.count_haplotypes(std::vector<unsigned int> {0, 2}), 2);
+    ASSERT_EQ(entry_5.count_haplotypes(std::vector<unsigned int> {0, 3, 4}), 1);
+    ASSERT_EQ(entry_5.count_haplotypes(std::vector<unsigned int> {1, 2, 3, 4}), 4);
+    ASSERT_EQ(entry_5.count_haplotypes(std::vector<unsigned int> {0, 4}), 0);
+    ASSERT_EQ(entry_5.count_haplotypes(std::vector<unsigned int> {}), 0);
 }

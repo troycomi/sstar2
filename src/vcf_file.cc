@@ -1,25 +1,31 @@
 #include "sstar2/vcf_file.h"
 #include <sstream>
 
-std::string VcfEntry::to_str(void){
+std::string VcfEntry::to_str(void) const{
     std::ostringstream sstr;
     sstr << chromosome << '\t'
         << position << '\t'
         << reference << '\t'
         << alternative;
     for (auto b : haplotypes)
-        sstr << '\t' << b ? '1' : '0';
+        sstr << '\t' << (b ? '1' : '0');
     sstr << '\n';
     return sstr.str();
 }
 
-short int VcfEntry::genotype(int individual){
+short unsigned int VcfEntry::genotype(unsigned int individual) const{
     individual <<= 1;  // *= 2
 
     return haplotypes.at(individual) + haplotypes.at(individual + 1);
 }
 
-bool VcfEntry::any_haplotype(std::vector<int> individuals){
+short unsigned int VcfEntry::gt_code(unsigned int individual) const{
+    individual <<= 1;  // *= 2
+
+    return haplotypes.at(individual) + (haplotypes.at(individual + 1) << 1);
+}
+
+bool VcfEntry::any_haplotype(const std::vector<unsigned int> &individuals) const{
     for (auto indiv : individuals){
         indiv <<= 1;  // *=2
         if (haplotypes[indiv] | haplotypes[indiv + 1])
@@ -28,8 +34,8 @@ bool VcfEntry::any_haplotype(std::vector<int> individuals){
     return false;
 }
 
-int VcfEntry::count_haplotypes(std::vector<int> individuals){
-    int result = 0;
+unsigned int VcfEntry::count_haplotypes(const std::vector<unsigned int> &individuals) const{
+    unsigned int result = 0;
     for (auto indiv : individuals){
         indiv <<= 1;  // *=2
         result += haplotypes[indiv] + haplotypes[indiv + 1];
@@ -37,18 +43,18 @@ int VcfEntry::count_haplotypes(std::vector<int> individuals){
     return result;
 }
 
-int VcfFile::initialize_individuals(const std::string line,
+unsigned int VcfFile::initialize_individuals(const std::string line,
         const std::set<std::string> individuals){
     // matches individuals to the location in the vcf file
     // line is the header line of vcf with individual names
     std::stringstream stream(line);
     std::string token;
-    int index = 0;
+    unsigned int index = 0;
     while( std::getline(stream, token, '\t') ){
         if(index > 8 &&
                 (individuals.empty() ||
                  individuals.find(token) != individuals.end()))
-            individual_map.insert(std::pair<int, std::string>(index, token));
+            individual_map.insert(std::pair<unsigned int, std::string>(index, token));
         ++index;
     }
     return individual_map.size();
@@ -61,7 +67,7 @@ VcfEntry VcfFile::initialize_entry(){
 bool VcfFile::parse_line(const char* line, VcfEntry &entry){
     // returns true if line is updated
     const char *start, *end;
-    int token = 0, haplo_count = 0;
+    unsigned int token = 0, haplo_count = 0;
     start = end = line;
     auto current_indiv = individual_map.begin();
     for(;;){

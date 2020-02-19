@@ -9,3 +9,7 @@ add_library(window_generator window_generator.cc ${SStar_SOURCE_DIR}/include/sst
     )
 target_include_directories(window_generator PUBLIC ../include)
 
+add_library(sstar sstar.cc ${SStar_SOURCE_DIR}/include/sstar2/sstar.h
+    window_generator population_data vcf_file
+    )
+target_include_directories(sstar PUBLIC ../include)

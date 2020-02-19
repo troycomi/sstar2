@@ -1,6 +1,7 @@
 #include "sstar2/window_generator.h"
 
-WindowGenerator::WindowGenerator(int window_length, int step_size) :
+WindowGenerator::WindowGenerator(unsigned int window_length,
+        unsigned int step_size) :
     length(window_length), step(step_size) {
         if(step > length)
             throw std::invalid_argument("Window step can not be larger than length");
@@ -67,7 +68,7 @@ void WindowGenerator::initialize_window(){
     num_buckets += (length % step == 0) ? 0 : 1;  //ceiling operation
     window.buckets.resize(num_buckets);
     // initilize size of genotype vector
-    int num_targets = targets.size();
+    unsigned int num_targets = targets.size();
     for (int i = 0; i < num_buckets; ++i){
         window.buckets[i].genotypes.resize(num_targets);
     }
@@ -98,18 +99,16 @@ bool WindowGenerator::next_window(){
             return true;
 
         // validate other properties
-        int targ_haps = vcf_line.count_haplotypes(targets);
-        int ref_haps = vcf_line.count_haplotypes(references);
+        unsigned int targ_haps = vcf_line.count_haplotypes(targets);
+        unsigned int ref_haps = vcf_line.count_haplotypes(references);
         if(targ_haps == 0 && ref_haps == 0)  // not found
             continue;
         if(targ_haps == targets.size()*2 &&
                 ref_haps == references.size()*2)  // fixed
             continue;
 
-        std::cout << "VALID: " << vcf_line.to_str();
-        // TODO make a record function
-        // test private methods (probably ok to be public)
-        // test more of the struct methods
+        window.record(vcf_line, targets, targ_haps, ref_haps);
+
     }while(next_line());
     // at this point, no more lines are available, but the window is valid
     // need to record no lines are left and return false the next time...
@@ -118,6 +117,8 @@ bool WindowGenerator::next_window(){
 }
 
 bool WindowGenerator::next_line(){
+    // updates vcf_line to new value, returns true when the line is valid
+    // false when the end of file was reached
     while(std::getline(*vcf, vcf_string)){
         if(! vcf_file.parse_line(vcf_string.c_str(), vcf_line))
             continue;
@@ -128,18 +129,73 @@ bool WindowGenerator::next_line(){
     return false;
 }
 
-void Window::reset_window(std::string chrom, int length, int step){
+void Window::record(const VcfEntry &entry,
+        const std::vector<unsigned int> &targets,
+        unsigned int target_haplotypes, unsigned int reference_haplotypes){
+    // record the provided entry to the window
+    // assumes in the range of (start, end], not fixed and present in ref or target
+
+    // iterate in reverse since will mostly be inserting into last bucket
+    for(auto bucket = buckets.rbegin(); bucket != buckets.rend(); ++bucket){
+        // skip bucket outside of entry
+        if(bucket->start >= entry.position || entry.position > bucket->end)
+            continue;
+        ++bucket->site_count;
+        if(reference_haplotypes != 0){
+            ++bucket->reference_count;
+            return;  // only care about non-ref snps
+        }
+        short unsigned int gt;
+        unsigned int indiv = 0;
+        // for each target, if gt != 0, recorde position and gt
+        for(unsigned int target : targets){
+            if((gt = entry.gt_code(target)) != 0)
+                bucket->genotypes[indiv].emplace_back(entry.position, gt);
+            ++indiv;
+        }
+        return;
+    }
+}
+
+unsigned int Window::total_snps() const{
+    unsigned int result = 0;
+    for (auto bucket : buckets){
+        result += bucket.site_count;
+    }
+    return result;
+}
+
+unsigned int Window::reference_snps() const{
+    unsigned int result = 0;
+    for (auto bucket : buckets){
+        result += bucket.reference_count;
+    }
+    return result;
+}
+
+unsigned int Window::individual_snps(unsigned int individual) const{
+    unsigned int result = 0;
+    for (auto bucket : buckets){
+        result += bucket.genotypes[individual].size();
+    }
+    return result;
+}
+
+void Window::reset_window(std::string chrom,
+        unsigned int length, unsigned int step){
     chromosome = chrom;
     start = 0;
     end = length;
-    for(int i = 0; i < buckets.size(); i++)
+    callable_bases = length;  // no support for masking yet
+    for(unsigned int i = 0; i < buckets.size(); i++)
         buckets[i].reset_bucket(i*step, (i+1)*step);
 }
 
-void Window::step(int step){
+void Window::step(unsigned int step){
     // increment start and end, prepare bucket
     start += step;
-    buckets[0].reset_bucket(end, end + step);
+    buckets[0].reset_bucket(buckets.back().end,
+            buckets.back().end + step);
     end += step;
     // cycle buckets
     std::rotate(buckets.begin(),
@@ -147,47 +203,39 @@ void Window::step(int step){
             buckets.end());
 }
 
-void WindowBucket::reset_bucket(int start, int end){
+void WindowBucket::reset_bucket(unsigned int start, unsigned int end){
     this->start = start;
     this->end = end;
     site_count = 0;
     reference_count = 0;
-    positions.clear();
-    for (int i = 0; i < genotypes.size(); i++)
+    for (unsigned int i = 0; i < genotypes.size(); i++)
         genotypes[i].clear();
 }
 
 std::ostream& operator<<(std::ostream &strm, const Window &window){
     strm << "chrom: " << window.chromosome << "\tstart: "
         << window.start << "\tend: " << window.end << "\nBuckets:\n";
-    for (int i = 0; i < window.buckets.size(); ++i)
+    for (unsigned int i = 0; i < window.buckets.size(); ++i)
         strm << "\t#" << i << ":\n" << window.buckets[i] << '\n';
     return strm;
 }
 
 std::ostream& operator<<(std::ostream &strm, const WindowBucket &bucket){
-    strm << "\tstart: " << bucket.start << "\tend: " << bucket.end << "\nwith "
+    strm << "\tstart: " << bucket.start << "\tend: " << bucket.end << "\n\twith "
         << bucket.site_count << " sites\t " << bucket.reference_count
         << " references\n";
-    // for each position
-    for (int i = 0; i < bucket.positions.size(); ++i){
-        strm << '\t' << bucket.positions[i];
-        // for each individual
-        for (int j = 0; j < bucket.genotypes.size(); j++){
-            bool found = false;
-            // for each GT entry
-            for (auto gt : bucket.genotypes[j])
-                if (gt.position_index == i){
-                    found = true;
-                    strm << gt.genotype;
-                    break;
-                }
-
-            if (! found)
-                strm << '0';
-            strm << ' ';
-        }
+    int indiv = 0;
+    for (auto genotype : bucket.genotypes){
+        strm << "\t\tindiv " << indiv << "\t";
+        for (auto gt : genotype)
+            strm << "(" << gt.position << ", " << gt.genotype << ")\t";
         strm << "\n";
+        ++indiv;
     }
     return strm;
+}
+
+bool WindowGT::operator==(const WindowGT& rhs) const{
+    return position == rhs.position &&
+        genotype == rhs.genotype;
 }

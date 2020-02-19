@@ -13,26 +13,34 @@
 #include "sstar2/population_data.h"
 
 struct WindowGT {
-    int position_index;
-    short genotype;  // encoded haplotypes, 3 -> homozygous alt
+    unsigned long position;
+    short unsigned int genotype;  // encoded haplotypes, 3 -> homozygous alt
+    bool operator==(const WindowGT& rhs) const;
+
+    WindowGT(unsigned long pos, short unsigned int gt):
+        position(pos), genotype(gt){};
 };
 
 struct WindowBucket {
-    long start, end;
-    int site_count=0,  // number of snps after removing excluded, fixed, and homozygous ref
+    unsigned long start=0, end=0;
+    unsigned int site_count=0,  // number of snps after removing excluded, fixed, and homozygous ref
         reference_count=0;  // number in any ref
-    std::vector<int> positions;
     std::vector<std::vector<WindowGT>> genotypes;
-    void reset_bucket(int start, int end);
+    void reset_bucket(unsigned int start, unsigned int end);
 };
 
 struct Window {
     std::string chromosome;
     // contains positions in (start, end]
-    long start=0, end=0;
+    unsigned long start=0, end=0, callable_bases=0;
     std::deque<WindowBucket> buckets;
-    void reset_window(std::string chrom, int length, int step);
-    void step(int step);
+    void reset_window(std::string chrom, unsigned int length, unsigned int step);
+    void step(unsigned int step);
+    void record(const VcfEntry &entry, const std::vector<unsigned int> &targets,
+            unsigned int target_haplotypes, unsigned int reference_haplotypes);
+    unsigned int total_snps() const;
+    unsigned int reference_snps() const;
+    unsigned int individual_snps(unsigned int individual) const;
 };
 
 std::ostream& operator<<(std::ostream &strm, const Window &window);
@@ -40,15 +48,13 @@ std::ostream& operator<<(std::ostream &strm, const WindowBucket &bucket);
 
 class WindowGenerator{
 
-    int length, step;
+    unsigned int length, step;
     bool terminated = false;
 
     std::istream *vcf = nullptr;
     std::string vcf_string;
-    std::vector<int> targets;
-    std::vector<std::string> target_names;
-    std::vector<int> references;
-    std::vector<int> excluded;
+    std::vector<unsigned int> references;
+    std::vector<unsigned int> excluded;
     void initialize_vcf();
     void initialize_window();
     bool next_line();
@@ -58,8 +64,10 @@ class WindowGenerator{
         VcfEntry vcf_line{"", 0};
         PopulationData population;
         Window window;
+        std::vector<unsigned int> targets;
+        std::vector<std::string> target_names;
 
-        WindowGenerator(int window_length, int step_size);
+        WindowGenerator(unsigned int window_length, unsigned int step_size);
 
         void initialize(
                 std::istream &vcf_input,
