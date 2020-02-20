@@ -123,6 +123,3 @@ TEST_F(SStarFixtureNormal, CanWriteWindow){
             );
     ASSERT_FALSE(generator.next_window());
 }
-
-// TODO make sstar calc function from latest python
-// TODO test process window and sstar

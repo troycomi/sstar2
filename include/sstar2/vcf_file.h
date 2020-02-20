@@ -28,7 +28,7 @@ struct VcfEntry{
 };
 
 class VcfFile{
-    // if user has been warned about unphased data by this
+    // if user has been warned about unphased data
     bool warned_unphased = false;
 
     public:
