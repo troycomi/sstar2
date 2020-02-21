@@ -37,7 +37,7 @@ struct Window {
     void reset_window(std::string chrom, unsigned int length, unsigned int step);
     void step(unsigned int step);
     void record(const VcfEntry &entry, const std::vector<unsigned int> &targets,
-            unsigned int target_haplotypes, unsigned int reference_haplotypes);
+            unsigned int reference_haplotypes);
     unsigned int total_snps() const;
     unsigned int reference_snps() const;
     unsigned int individual_snps(unsigned int individual) const;

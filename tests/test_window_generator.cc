@@ -128,6 +128,7 @@ TEST_F(Generator_Input, CanYieldWindow){
     gen.initialize(vcf, pop, target, reference, exclude);
 
     ASSERT_TRUE(gen.next_window());
+    std::cout << gen.window;
     ASSERT_STREQ(gen.window.chromosome.c_str(), "1");
     ASSERT_EQ(gen.window.start, 0);
     ASSERT_EQ(gen.window.end, 10);
@@ -413,7 +414,7 @@ TEST(WindowGenerator, CanRecordValues){
     line.genotypes[1] = 0;
     line.genotypes[4] = 0;
 
-    window.record(line, targets, 0, 2);
+    window.record(line, targets, 2);
 
     ASSERT_EQ(window.total_snps(), 1);
     ASSERT_EQ(window.reference_snps(), 1);
@@ -422,7 +423,7 @@ TEST(WindowGenerator, CanRecordValues){
     ASSERT_EQ(window.individual_snps(2), 0);
 
     line.position = 2;
-    window.record(line, targets, 0, 0);  // just update total
+    window.record(line, targets, 0);  // just update total
 
     ASSERT_EQ(window.total_snps(), 2);
     ASSERT_EQ(window.reference_snps(), 1);
@@ -435,7 +436,7 @@ TEST(WindowGenerator, CanRecordValues){
     line.genotypes[1] = 3;
     line.genotypes[4] = 1;
 
-    window.record(line, targets, 3, 0);
+    window.record(line, targets, 0);
 
     ASSERT_EQ(window.total_snps(), 3);
     ASSERT_EQ(window.reference_snps(), 1);
@@ -455,7 +456,7 @@ TEST(WindowGenerator, CanRecordValues){
     line.genotypes[1] = 2;
     line.genotypes[4] = 0;
 
-    window.record(line, targets, 3, 0);
+    window.record(line, targets, 0);
 
     ASSERT_EQ(window.total_snps(), 4);
     ASSERT_EQ(window.reference_snps(), 1);
@@ -475,7 +476,7 @@ TEST(WindowGenerator, CanRecordValues){
     line.genotypes[1] = 1;
     line.genotypes[4] = 1;
 
-    window.record(line, targets, 2, 0);
+    window.record(line, targets, 0);
 
     ASSERT_EQ(window.total_snps(), 5);
     ASSERT_EQ(window.reference_snps(), 1);
@@ -495,7 +496,7 @@ TEST(WindowGenerator, CanRecordValues){
     line.genotypes[1] = 1;
     line.genotypes[4] = 3;
 
-    window.record(line, targets, 3, 0);
+    window.record(line, targets, 0);
 
     ASSERT_EQ(window.callable_bases, 10);
     ASSERT_EQ(window.total_snps(), 6);
@@ -520,7 +521,7 @@ TEST(WindowGenerator, CanRecordValues){
 
     line.position = 7;
 
-    window.record(line, targets, 3, 1);  // only reference is recorded
+    window.record(line, targets, 1);  // only reference is recorded
 
     ASSERT_EQ(window.callable_bases, 10);
     ASSERT_EQ(window.total_snps(), 7);

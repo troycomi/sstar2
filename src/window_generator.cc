@@ -107,7 +107,7 @@ bool WindowGenerator::next_window(){
                 ref_haps == references.size()*2)  // fixed
             continue;
 
-        window.record(vcf_line, targets, targ_haps, ref_haps);
+        window.record(vcf_line, targets, ref_haps);
 
     }while(next_line());
     // at this point, no more lines are available, but the window is valid
@@ -131,7 +131,7 @@ bool WindowGenerator::next_line(){
 
 void Window::record(const VcfEntry &entry,
         const std::vector<unsigned int> &targets,
-        unsigned int target_haplotypes, unsigned int reference_haplotypes){
+        unsigned int reference_haplotypes){
     // record the provided entry to the window
     // assumes in the range of (start, end], not fixed and present in ref or target
 
