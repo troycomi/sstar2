@@ -16,13 +16,11 @@ struct VcfEntry{
     unsigned long int position;
     char reference;
     char alternative;
-    std::vector<uint8_t> haplotypes;
+    std::vector<uint8_t> genotypes;
 
     VcfEntry(std::string chrom, size_t individuals) :
-        chromosome(chrom), haplotypes(individuals * 2) {}
+        chromosome(chrom), genotypes(individuals) {}
     std::string to_str() const;
-    short unsigned int genotype(unsigned int individual) const;
-    short unsigned int gt_code(unsigned int individual) const;
     bool any_haplotype(const std::vector<unsigned int> &individuals) const;
     unsigned int count_haplotypes(const std::vector<unsigned int> &individuals) const;
 };
@@ -30,6 +28,7 @@ struct VcfEntry{
 class VcfFile{
     // if user has been warned about unphased data
     bool warned_unphased = false;
+    std::vector<unsigned int> individual_indices;
 
     public:
         // map of individual to position in vcf file

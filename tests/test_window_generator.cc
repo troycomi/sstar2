@@ -80,7 +80,7 @@ TEST_F(Generator_Input, CanInitialize){
     ASSERT_THAT(gen.population.target_to_population,
             ElementsAre(Pair("msp_4", "EUR")));
     ASSERT_STREQ(gen.vcf_line.chromosome.c_str(), "1");  // first line
-    ASSERT_EQ(gen.vcf_line.haplotypes.size(), 4*2);  // 4 indivs, 2 haplotypes
+    ASSERT_EQ(gen.vcf_line.genotypes.size(), 4);  // 4 indivs
     // two buckets for 10 / 5
     ASSERT_EQ(gen.window.buckets.size(), 2);
     // one target
@@ -108,7 +108,7 @@ TEST_F(Generator_Input, CanInitializeOddWindow){
                 Pair("msp_4", "EUR")
                 ));
     ASSERT_STREQ(gen.vcf_line.chromosome.c_str(), "1");
-    ASSERT_EQ(gen.vcf_line.haplotypes.size(), 5*2);  // 4 indivs, 2 haplotypes
+    ASSERT_EQ(gen.vcf_line.genotypes.size(), 5);  // 4 indivs
     // four buckets for 10 / 3
     ASSERT_EQ(gen.window.buckets.size(), 4);
     // three target
@@ -406,15 +406,12 @@ TEST(WindowGenerator, CanRecordValues){
 
     line.reference = 'A';
     line.alternative = 'T';
-    // haplotypes 4-7 are ref and not directly checked
+    // genotypes 2-3 are ref and not directly checked
 
     line.position = 1;
-    line.haplotypes[0] = 0;
-    line.haplotypes[1] = 0;
-    line.haplotypes[2] = 0;
-    line.haplotypes[3] = 0;
-    line.haplotypes[8] = 0;
-    line.haplotypes[9] = 0;
+    line.genotypes[0] = 0;
+    line.genotypes[1] = 0;
+    line.genotypes[4] = 0;
 
     window.record(line, targets, 0, 2);
 
@@ -434,12 +431,9 @@ TEST(WindowGenerator, CanRecordValues){
     ASSERT_EQ(window.individual_snps(2), 0);
 
     line.position = 3;
-    line.haplotypes[0] = 0;
-    line.haplotypes[1] = 1;
-    line.haplotypes[2] = 1;
-    line.haplotypes[3] = 1;
-    line.haplotypes[8] = 1;
-    line.haplotypes[9] = 0;
+    line.genotypes[0] = 2;
+    line.genotypes[1] = 3;
+    line.genotypes[4] = 1;
 
     window.record(line, targets, 3, 0);
 
@@ -457,12 +451,9 @@ TEST(WindowGenerator, CanRecordValues){
             ElementsAre(WindowGT{3, 1}));
 
     line.position = 4;
-    line.haplotypes[0] = 0;
-    line.haplotypes[1] = 1;
-    line.haplotypes[2] = 0;
-    line.haplotypes[3] = 1;
-    line.haplotypes[8] = 0;
-    line.haplotypes[9] = 0;
+    line.genotypes[0] = 2;
+    line.genotypes[1] = 2;
+    line.genotypes[4] = 0;
 
     window.record(line, targets, 3, 0);
 
@@ -480,12 +471,9 @@ TEST(WindowGenerator, CanRecordValues){
             ElementsAre(WindowGT{3, 1}));
 
     line.position = 5;
-    line.haplotypes[0] = 0;
-    line.haplotypes[1] = 0;
-    line.haplotypes[2] = 1;
-    line.haplotypes[3] = 0;
-    line.haplotypes[8] = 1;
-    line.haplotypes[9] = 0;
+    line.genotypes[0] = 0;
+    line.genotypes[1] = 1;
+    line.genotypes[4] = 1;
 
     window.record(line, targets, 2, 0);
 
@@ -503,12 +491,9 @@ TEST(WindowGenerator, CanRecordValues){
             ElementsAre(WindowGT{3, 1}, WindowGT{5, 1}));
 
     line.position = 6;
-    line.haplotypes[0] = 0;
-    line.haplotypes[1] = 1;
-    line.haplotypes[2] = 1;
-    line.haplotypes[3] = 0;
-    line.haplotypes[8] = 1;
-    line.haplotypes[9] = 1;
+    line.genotypes[0] = 2;
+    line.genotypes[1] = 1;
+    line.genotypes[4] = 3;
 
     window.record(line, targets, 3, 0);
 

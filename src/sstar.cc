@@ -18,7 +18,7 @@ void SStarCaller::write_window(std::ostream &output,
                 const WindowGenerator &generator){
     unsigned int total_snps = generator.window.total_snps();
     unsigned int ref_snps = generator.window.reference_snps();
-    for(unsigned int i = 0; i < generator.targets.size(); i++){
+    for(unsigned int i = 0; i < generator.targets.size(); ++i){
         unsigned int indiv_snps = generator.window.individual_snps(i);
         output << generator.window.chromosome << '\t'
             << generator.window.start << '\t'
@@ -34,10 +34,10 @@ void SStarCaller::write_window(std::ostream &output,
             // build genotypes vector
             std::vector<WindowGT> genotypes;
             genotypes.reserve(indiv_snps);
-            for (auto bucket : generator.window.buckets)
+            for(size_t b = 0; b < generator.window.buckets.size(); ++b)
                 genotypes.insert(genotypes.end(),
-                        bucket.genotypes[i].begin(),
-                        bucket.genotypes[i].end());
+                        generator.window.buckets[b].genotypes[i].begin(),
+                        generator.window.buckets[b].genotypes[i].end());
             long s_score = sstar(genotypes);
             output << s_score << '\t'
                 << genotypes.size() << '\t';
@@ -98,7 +98,8 @@ void SStarCaller::write_window(std::ostream &output,
 
 long SStarCaller::sstar(std::vector<WindowGT> &genotypes){
     size_t nsnps = genotypes.size();
-    std::vector<int> scores(nsnps, 0);
+    // start with 10 mismatches as no-score without worring about overflow
+    std::vector<int> scores(nsnps, mismatch_penalty*10);
     long new_score, append_score, bp_dist;
     // using snps as a 2d vector below
     std::vector<uint8_t> snps(nsnps*nsnps, false);  // true if snps is used

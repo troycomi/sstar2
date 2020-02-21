@@ -149,7 +149,7 @@ void Window::record(const VcfEntry &entry,
         unsigned int indiv = 0;
         // for each target, if gt != 0, recorde position and gt
         for(unsigned int target : targets){
-            if((gt = entry.gt_code(target)) != 0)
+            if((gt = entry.genotypes[target]) != 0)
                 bucket->genotypes[indiv].emplace_back(entry.position, gt);
             ++indiv;
         }
@@ -159,24 +159,24 @@ void Window::record(const VcfEntry &entry,
 
 unsigned int Window::total_snps() const{
     unsigned int result = 0;
-    for (auto bucket : buckets){
-        result += bucket.site_count;
+    for (size_t i = 0; i < buckets.size(); ++i){
+        result += buckets[i].site_count;
     }
     return result;
 }
 
 unsigned int Window::reference_snps() const{
     unsigned int result = 0;
-    for (auto bucket : buckets){
-        result += bucket.reference_count;
+    for (size_t i = 0; i < buckets.size(); ++i){
+        result += buckets[i].reference_count;
     }
     return result;
 }
 
 unsigned int Window::individual_snps(unsigned int individual) const{
     unsigned int result = 0;
-    for (auto bucket : buckets){
-        result += bucket.genotypes[individual].size();
+    for (size_t i = 0; i < buckets.size(); ++i){
+        result += buckets[i].genotypes[individual].size();
     }
     return result;
 }
@@ -187,7 +187,7 @@ void Window::reset_window(std::string chrom,
     start = 0;
     end = length;
     callable_bases = length;  // no support for masking yet
-    for(unsigned int i = 0; i < buckets.size(); i++)
+    for(unsigned int i = 0; i < buckets.size(); ++i)
         buckets[i].reset_bucket(i*step, (i+1)*step);
 }
 
@@ -208,7 +208,7 @@ void WindowBucket::reset_bucket(unsigned int start, unsigned int end){
     this->end = end;
     site_count = 0;
     reference_count = 0;
-    for (unsigned int i = 0; i < genotypes.size(); i++)
+    for (unsigned int i = 0; i < genotypes.size(); ++i)
         genotypes[i].clear();
 }
 

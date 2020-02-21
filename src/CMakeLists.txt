@@ -14,7 +14,7 @@ add_library(sstar sstar.cc ${SStar_SOURCE_DIR}/include/sstar2/sstar.h
     )
 target_include_directories(sstar PUBLIC ../include)
 
-add_executable(sstar2 main.cc ${SStar_SOURCE_DIR}/include/cxxopts/cxxopts.hpp
+add_executable(sstar2 main.cc ${SStar_SOURCE_DIR}/include/CLI11/CLI11.hpp
     sstar window_generator population_data vcf_file
     )
 target_include_directories(sstar2 PUBLIC ../include)

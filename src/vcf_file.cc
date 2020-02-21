@@ -7,28 +7,15 @@ std::string VcfEntry::to_str(void) const{
         << position << '\t'
         << reference << '\t'
         << alternative;
-    for (auto b : haplotypes)
-        sstr << '\t' << (b ? '1' : '0');
+    for (auto b : genotypes)
+        sstr << '\t' << b;
     sstr << '\n';
     return sstr.str();
 }
 
-short unsigned int VcfEntry::genotype(unsigned int individual) const{
-    individual <<= 1;  // *= 2
-
-    return haplotypes.at(individual) + haplotypes.at(individual + 1);
-}
-
-short unsigned int VcfEntry::gt_code(unsigned int individual) const{
-    individual <<= 1;  // *= 2
-
-    return haplotypes.at(individual) + (haplotypes.at(individual + 1) << 1);
-}
-
 bool VcfEntry::any_haplotype(const std::vector<unsigned int> &individuals) const{
     for (auto indiv : individuals){
-        indiv <<= 1;  // *=2
-        if (haplotypes[indiv] | haplotypes[indiv + 1])
+        if (genotypes[indiv])
             return true;
     }
     return false;
@@ -37,8 +24,8 @@ bool VcfEntry::any_haplotype(const std::vector<unsigned int> &individuals) const
 unsigned int VcfEntry::count_haplotypes(const std::vector<unsigned int> &individuals) const{
     unsigned int result = 0;
     for (auto indiv : individuals){
-        indiv <<= 1;  // *=2
-        result += haplotypes[indiv] + haplotypes[indiv + 1];
+        result += (genotypes[indiv] != 0) + (genotypes[indiv] == 3);
+        // this maps 0 to 0, 1 to 1, 2 to 1 and 3 to 1
     }
     return result;
 }
@@ -53,8 +40,10 @@ unsigned int VcfFile::initialize_individuals(const std::string line,
     while( std::getline(stream, token, '\t') ){
         if(index > 8 &&
                 (individuals.empty() ||
-                 individuals.find(token) != individuals.end()))
+                 individuals.find(token) != individuals.end())){
             individual_map.insert(std::pair<unsigned int, std::string>(index, token));
+            individual_indices.push_back(index);
+        }
         ++index;
     }
     return individual_map.size();
@@ -67,12 +56,12 @@ VcfEntry VcfFile::initialize_entry(){
 bool VcfFile::parse_line(const char* line, VcfEntry &entry){
     // returns true if line is updated
     const char *start, *end;
-    unsigned int token = 0, haplo_count = 0;
+    unsigned int token = 0, geno_count = 0;
     start = end = line;
-    auto current_indiv = individual_map.begin();
+    auto current_indiv = individual_indices.begin();
     for(;;){
         // move end to next tab
-        for(; *end != '\t' && *end != '\0'; ++end)  ;
+        end = start + strcspn(start, "\t");
 
         switch (token){
             case 0:  // chromosome 
@@ -81,7 +70,10 @@ bool VcfFile::parse_line(const char* line, VcfEntry &entry){
                 break;
 
             case 1:  // position 
-                entry.position = std::stoi(start, nullptr);
+                // faster version of? entry.position = std::stoi(start, nullptr);
+                entry.position = 0;
+                for( ; start != end; ++start)
+                    entry.position = (*start - '0') + entry.position * 10;
                 break;
 
             case 3:  // ref
@@ -108,10 +100,9 @@ bool VcfFile::parse_line(const char* line, VcfEntry &entry){
                 break;
 
             default:  // individuals
-                if (token == current_indiv->first){
+                if (token == *current_indiv){
                     if (*start == '.'){  // unknown (either . or ./.)
-                        entry.haplotypes[haplo_count] = 0;
-                        entry.haplotypes[haplo_count+1] = 0;
+                        entry.genotypes[geno_count] = 0;
                     }
                     else{
                         if (*(start+1) != '|' && !warned_unphased){
@@ -120,11 +111,11 @@ bool VcfFile::parse_line(const char* line, VcfEntry &entry){
                                 " and pos " << entry.position << "!\n";
                             warned_unphased = true;
                         }
-                        entry.haplotypes[haplo_count] = (*start == '1');
-                        entry.haplotypes[haplo_count+1] = (*(start + 2) == '1');
+                        entry.genotypes[geno_count] = (*start == '1') + 
+                            ((*(start + 2) == '1') << 1);
                     }
                     ++current_indiv;
-                    haplo_count += 2;
+                    ++geno_count;
                 }
                 break;
         }

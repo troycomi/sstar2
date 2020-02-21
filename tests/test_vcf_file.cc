@@ -60,11 +60,11 @@ TEST_F(VCF_File_F, CanInitializeEntry){
     VcfFile empty;
     VcfEntry e = empty.initialize_entry();
     ASSERT_STREQ(e.chromosome.c_str(), "");
-    ASSERT_EQ(e.haplotypes.size(), 0);
+    ASSERT_EQ(e.genotypes.size(), 0);
 
     e = vcf.initialize_entry();
     ASSERT_STREQ(e.chromosome.c_str(), "");
-    ASSERT_EQ(e.haplotypes.size(), 3*2);  // 3 match, 2 haplotypes
+    ASSERT_EQ(e.genotypes.size(), 3);  // 3 match
 }
 
 TEST_F(VCF_File_F, CanParseLine){
@@ -77,7 +77,7 @@ TEST_F(VCF_File_F, CanParseLine){
     ASSERT_EQ(entry.position, 7);
     ASSERT_EQ(entry.reference, 'A');
     ASSERT_EQ(entry.alternative, 'T');
-    ASSERT_THAT(entry.haplotypes, ::testing::ElementsAre(0, 0, 0, 0, 0, 0));
+    ASSERT_THAT(entry.genotypes, ::testing::ElementsAre(0, 0, 0));
 
     // with haplotypes
     ASSERT_TRUE(vcf.parse_line(
@@ -87,7 +87,7 @@ TEST_F(VCF_File_F, CanParseLine){
     ASSERT_EQ(entry.position, 8);
     ASSERT_EQ(entry.reference, 'C');
     ASSERT_EQ(entry.alternative, 'G');
-    ASSERT_THAT(entry.haplotypes, ::testing::ElementsAre(1, 0, 0, 1, 1, 1));
+    ASSERT_THAT(entry.genotypes, ::testing::ElementsAre(1, 2, 3));
 
     // with other vcf entries, and dots
     ASSERT_TRUE(vcf.parse_line(
@@ -98,7 +98,7 @@ TEST_F(VCF_File_F, CanParseLine){
     ASSERT_EQ(entry.position, 8);
     ASSERT_EQ(entry.reference, 'C');
     ASSERT_EQ(entry.alternative, 'G');
-    ASSERT_THAT(entry.haplotypes, ::testing::ElementsAre(1, 0, 0, 0, 0, 0));
+    ASSERT_THAT(entry.genotypes, ::testing::ElementsAre(1, 0, 0));
 
     // failing format
     ASSERT_THROW(vcf.parse_line(
@@ -131,7 +131,7 @@ TEST_F(VCF_File_F, ParseLineUnphasedMakesWarning){
             entry));
     ASSERT_STREQ(entry.chromosome.c_str(), "3");
     ASSERT_EQ(entry.position, 10);
-    ASSERT_THAT(entry.haplotypes, ::testing::ElementsAre(1, 0, 0, 0, 0, 0));
+    ASSERT_THAT(entry.genotypes, ::testing::ElementsAre(1, 0, 0));
     std::string output = testing::internal::GetCapturedStderr();
     ASSERT_STREQ(output.c_str(),
             "WARNING: Detected unphased haplotype at chrom 3 and pos 10!\n");
@@ -142,7 +142,7 @@ TEST_F(VCF_File_F, ParseLineUnphasedMakesWarning){
             "2\t8\t.\tC\tG\t.\tPASS\t.\tGT:and:others\t1/0\t1|0:asdf:asdf"
             "\t0|1\t.\t1|0\t./.",
             entry));
-    ASSERT_THAT(entry.haplotypes, ::testing::ElementsAre(1, 0, 0, 0, 0, 0));
+    ASSERT_THAT(entry.genotypes, ::testing::ElementsAre(1, 0, 0));
     ASSERT_STREQ(entry.chromosome.c_str(), "2");
     ASSERT_EQ(entry.position, 8);
     output = testing::internal::GetCapturedStderr();
