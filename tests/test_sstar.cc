@@ -4,6 +4,8 @@
 
 #include "sstar2/sstar.h"
 
+using testing::ElementsAre;
+
 TEST(SSTAR, CanWriteHeader){
     std::ostringstream outfile;
     SStarCaller sstar;
@@ -122,4 +124,25 @@ TEST_F(SStarFixtureNormal, CanWriteWindow){
             "0\t0\t.\t0\t0\t0\t0\t0\t0\t0\t0\t.\t50000\n"
             );
     ASSERT_FALSE(generator.next_window());
+}
+
+TEST(SStarMismatches, TiedScoreUseLonger){
+    std::vector<WindowGT>genotypes{
+        {7462931, 3},
+        {7467931, 3},
+        {7468819, 1},
+        {7492334, 2},
+        {7493191, 2}};
+    SStarCaller sstar;
+    ASSERT_EQ(sstar.sstar(genotypes), 34372);
+    for (auto &gt : genotypes)
+        std::cout << gt.position << ',' << gt.genotype << ' ';
+    std::cout << '\n';
+    ASSERT_THAT(genotypes, ElementsAre(
+                WindowGT{7462931, 3},
+                WindowGT{7467931, 3},
+                WindowGT{7468819, 1},
+                WindowGT{7492334, 2},
+                WindowGT{7493191, 2}
+        ));
 }

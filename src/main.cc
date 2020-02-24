@@ -53,13 +53,13 @@ int main(int argc, char** argv)
     popdata.open(popfile);
 
     std::set<std::string> target_set, reference_set, excluded_set;
-    for (auto indiv : targets)
+    for (const auto &indiv : targets)
         target_set.insert(indiv);
             
-    for (auto indiv : references)
+    for (const auto &indiv : references)
         reference_set.insert(indiv);
             
-    for (auto indiv : excluded)
+    for (const auto &indiv : excluded)
         excluded_set.insert(indiv);
 
     std::ofstream of;

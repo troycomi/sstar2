@@ -34,10 +34,10 @@ void SStarCaller::write_window(std::ostream &output,
             // build genotypes vector
             std::vector<WindowGT> genotypes;
             genotypes.reserve(indiv_snps);
-            for(size_t b = 0; b < generator.window.buckets.size(); ++b)
+            for(const auto &bucket : generator.window.buckets)
                 genotypes.insert(genotypes.end(),
-                        generator.window.buckets[b].genotypes[i].begin(),
-                        generator.window.buckets[b].genotypes[i].end());
+                        bucket.genotypes[i].begin(),
+                        bucket.genotypes[i].end());
             long s_score = sstar(genotypes);
             output << s_score << '\t'
                 << genotypes.size() << '\t';
@@ -45,7 +45,7 @@ void SStarCaller::write_window(std::ostream &output,
             unsigned long hap1start=0, hap2start=0, hap1end=0, hap2end=0;
             int hap1count = 0, hap2count = 0;
             bool first = true;
-            for (auto gt : genotypes){
+            for (const auto &gt : genotypes){
                 // print positions joined on a comma
                 if (first)
                     first = !first;
@@ -83,7 +83,7 @@ void SStarCaller::write_window(std::ostream &output,
                 << hap2count << '\t';
             // write comma joined haplotypes
             first = true;
-            for (auto gt : genotypes){
+            for (const auto &gt : genotypes){
                 if (first)
                     first = !first;
                 else
@@ -117,6 +117,14 @@ long SStarCaller::sstar(std::vector<WindowGT> &genotypes){
                 mismatch_penalty;
 
             append_score = scores[j] + new_score;
+
+            if (scores[k] < append_score){
+                scores[k] = append_score;
+                std::copy(snps.begin() + j*nsnps,
+                        snps.begin() + (j+1)*nsnps,
+                        snps.begin() + k*nsnps);
+                snps[k*nsnps + k] = true;
+            }
             if (scores[k] < new_score){
                 scores[k] = new_score;
                 std::fill(snps.begin() + k*nsnps,
@@ -125,24 +133,17 @@ long SStarCaller::sstar(std::vector<WindowGT> &genotypes){
                 snps[k*nsnps + j] = true;
                 snps[k*nsnps + k] = true;
             }
-            if (scores[k] < append_score){
-                scores[k] = append_score;
-                std::copy(snps.begin() + j*nsnps,
-                        snps.begin() + (j+1)*nsnps,
-                        snps.begin() + k*nsnps);
-                snps[k*nsnps + k] = true;
-            }
         }
     }
     auto maxScore = std::max_element(scores.begin(), scores.end());
-    auto maxIndex = maxScore - scores.begin();
 
     // update genotypes based on maxScore
     std::vector<WindowGT> gts;
     gts.reserve(nsnps);
-    auto maxSnp = snps.begin() + maxIndex * nsnps;
     auto gt_input = genotypes.begin();
     // copy over snps which are used in max score
+    auto maxIndex = maxScore - scores.begin();
+    auto maxSnp = snps.begin() + maxIndex * nsnps;
     for(int i = 0; i < nsnps; ++i){
         if(*maxSnp)
             gts.push_back(*gt_input);

@@ -39,7 +39,7 @@ void WindowGenerator::initialize_vcf(){
     // store target names because those will be needed later
     int ind = 0;
     bool found;
-    for (auto el : vcf_file.individual_map){
+    for (const auto &el : vcf_file.individual_map){
         found = false;
         if(population.targets.find(el.second) != population.targets.end()){
             targets.push_back(ind);
@@ -69,8 +69,8 @@ void WindowGenerator::initialize_window(){
     window.buckets.resize(num_buckets);
     // initilize size of genotype vector
     unsigned int num_targets = targets.size();
-    for (int i = 0; i < num_buckets; ++i){
-        window.buckets[i].genotypes.resize(num_targets);
+    for (auto &bucket : window.buckets){
+        bucket.genotypes.resize(num_targets);
     }
 }
 
@@ -159,24 +159,24 @@ void Window::record(const VcfEntry &entry,
 
 unsigned int Window::total_snps() const{
     unsigned int result = 0;
-    for (size_t i = 0; i < buckets.size(); ++i){
-        result += buckets[i].site_count;
+    for (const auto & bucket : buckets){
+        result += bucket.site_count;
     }
     return result;
 }
 
 unsigned int Window::reference_snps() const{
     unsigned int result = 0;
-    for (size_t i = 0; i < buckets.size(); ++i){
-        result += buckets[i].reference_count;
+    for (const auto & bucket : buckets){
+        result += bucket.reference_count;
     }
     return result;
 }
 
 unsigned int Window::individual_snps(unsigned int individual) const{
     unsigned int result = 0;
-    for (size_t i = 0; i < buckets.size(); ++i){
-        result += buckets[i].genotypes[individual].size();
+    for (const auto & bucket : buckets){
+        result += bucket.genotypes[individual].size();
     }
     return result;
 }
@@ -208,8 +208,8 @@ void WindowBucket::reset_bucket(unsigned int start, unsigned int end){
     this->end = end;
     site_count = 0;
     reference_count = 0;
-    for (unsigned int i = 0; i < genotypes.size(); ++i)
-        genotypes[i].clear();
+    for (auto &gt : genotypes)
+        gt.clear();
 }
 
 std::ostream& operator<<(std::ostream &strm, const Window &window){
@@ -225,9 +225,9 @@ std::ostream& operator<<(std::ostream &strm, const WindowBucket &bucket){
         << bucket.site_count << " sites\t " << bucket.reference_count
         << " references\n";
     int indiv = 0;
-    for (auto genotype : bucket.genotypes){
+    for (const auto &genotype : bucket.genotypes){
         strm << "\t\tindiv " << indiv << "\t";
-        for (auto gt : genotype)
+        for (const auto &gt : genotype)
             strm << "(" << gt.position << ", " << gt.genotype << ")\t";
         strm << "\n";
         ++indiv;

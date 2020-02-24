@@ -10,8 +10,6 @@ class SStarCaller{
     long match_bonus;
     long mismatch_penalty;
 
-    // calculates sstar and updates the windowGT to include just snps
-    long sstar(std::vector<WindowGT> &genotypes);
     const char* emptyline = (
             "0\t0\t.\t" // sstar, num snps, snps
             "0\t0\t0\t0\t"  // hap1 and 2 start end
@@ -28,4 +26,6 @@ class SStarCaller{
         // write the current window in generator
         void write_window(std::ostream &output,
                 const WindowGenerator &generator);
+        // calculates sstar and updates the windowGT to include just snps
+        long sstar(std::vector<WindowGT> &genotypes);
 };
