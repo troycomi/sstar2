@@ -1,3 +1,5 @@
+![](https://github.com/troycomi/sstar2/workflows/CI/badge.svg)
+
 # sstar2
 C++ implementation of sstar analysis
 
@@ -17,8 +19,10 @@ freezing-archer, but unsupported and deprecated columns related to p values are
 removed.
 
 ## Installation
-The executable is produced using cmake.  Download or clone the repository.
-From the root directory, run the following to make the sstar2 executable:
+The executable is produced using
+[cmake>=3.14](https://cliutils.gitlab.io/modern-cmake/chapters/intro/installing.html).
+Download or clone the repository.  From the root directory,
+run the following to make the sstar2 executable:
 ```bash
 mkdir build
 cd build
@@ -59,10 +63,27 @@ Comma separated list of reference populations or individuals
 
 To convert from freezing-archer:
 ```bash
--vcfz file.vcf               -> --vcf file.vcf.gz
+-vcf file.vcf                -> --vcf file.vcf.gz
 -vcfz file.vcf.gz            -> --vcf <(zcat file.vcf.gz)
 -ref-pops AFR -ref-inds ind1 -> --references AFR,ind1
 -winlen 50000                -> --length 50000
 -winstep 10000               -> --step 10000
 ```
 Other options are similar.
+
+```bash
+./sstar2 \
+    --vcf <(zcat 1.mod.vcf.gz) \
+    --popfile base.popfile \
+    --targets EUR,ASN \
+    --references AFR \
+    -l 50000 \
+    -s 10000 \
+    | head -n 5
+
+chrom   winstart   winend  n_snps  n_ind_snps   n_region_ind_snps       ind_id    pop     s_star  num_s_star_snps   s_star_snps             hap_1_s_start   hap_1_s_end     hap_2_s_start   hap_2_s_end     s_start s_end   n_s_star_snps_hap1    n_s_star_snps_hap2       s_star_haps     callable_bases
+1       0          50000   451     4            194                     msp_110   EUR     45603   4                 5382,28610,32662,35985  0               0               5382            32662           5382    35985   1                     3                        2,2,2,1         50000
+1       0          50000   451     0            190                     msp_111   EUR     0       0                 .                       0               0               0               0               0       0       0                     0                        .               50000
+1       0          50000   451     3            193                     msp_112   EUR     28616   3                 17506,26875,36122       0               0               17506           36122           17506   36122   1                     2                        2,1,2           50000
+1       0          50000   451     2            192                     msp_113   EUR     0       0                 .                       0               0               0               0               0       0       0                     0                        .               50000
+```
