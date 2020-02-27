@@ -4,11 +4,17 @@ target_include_directories(vcf_file PUBLIC ../include)
 add_library(population_data population_data.cc ${SStar_SOURCE_DIR}/include/sstar2/vcf_file.h)
 target_include_directories(population_data PUBLIC ../include)
 
+add_library(validator validator.cc
+    ${SStar_SOURCE_DIR}/include/sstar2/validator.h)
+target_include_directories(validator PUBLIC ../include)
+target_link_libraries(validator
+    vcf_file)
+
 add_library(window_generator window_generator.cc
     ${SStar_SOURCE_DIR}/include/sstar2/window_generator.h)
 target_include_directories(window_generator PUBLIC ../include)
 target_link_libraries(window_generator
-    vcf_file population_data)
+    vcf_file population_data validator)
 
 add_library(sstar sstar.cc ${SStar_SOURCE_DIR}/include/sstar2/sstar.h)
 target_include_directories(sstar PUBLIC ../include)

@@ -9,8 +9,10 @@
 #include <deque>
 #include <vector>
 #include <algorithm>
+#include <memory>
 #include "sstar2/vcf_file.h"
 #include "sstar2/population_data.h"
+#include "sstar2/validator.h"
 
 struct WindowGT {
     unsigned long position;
@@ -55,9 +57,12 @@ class WindowGenerator{
     std::string vcf_string;
     std::vector<unsigned int> references;
     std::vector<unsigned int> excluded;
+    std::vector<std::unique_ptr<Validator>> validators;
+
     void initialize_vcf();
     void initialize_window();
     bool next_line();
+    bool entry_is_valid();
 
     public:
         VcfFile vcf_file;

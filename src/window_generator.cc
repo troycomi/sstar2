@@ -58,6 +58,9 @@ void WindowGenerator::initialize_vcf(){
             throw std::invalid_argument("VCF file is yeilding extra individuals");
         ++ind;
     }
+    // include minimal validators
+    validators.push_back(std::unique_ptr<Validator>(
+                new FixationValidator(targets, references)));
     // read first line
     next_line();
 }
@@ -99,15 +102,10 @@ bool WindowGenerator::next_window(){
             return true;
 
         // validate other properties
-        unsigned int targ_haps = vcf_line.count_haplotypes(targets);
-        unsigned int ref_haps = vcf_line.count_haplotypes(references);
-        if(targ_haps == 0 && ref_haps == 0)  // not found
-            continue;
-        if(targ_haps == targets.size()*2 &&
-                ref_haps == references.size()*2)  // fixed
-            continue;
-
-        window.record(vcf_line, targets, ref_haps);
+        if(entry_is_valid()){
+            unsigned int ref_haps = vcf_line.count_haplotypes(references);
+            window.record(vcf_line, targets, ref_haps);
+        }
 
     }while(next_line());
     // at this point, no more lines are available, but the window is valid
@@ -127,6 +125,13 @@ bool WindowGenerator::next_line(){
         return true;
     }
     return false;
+}
+
+bool WindowGenerator::entry_is_valid(){
+    for (auto &validator : validators)
+        if(! validator->isValid(vcf_line))
+            return false;
+    return true;
 }
 
 void Window::record(const VcfEntry &entry,
