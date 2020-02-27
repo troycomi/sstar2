@@ -15,6 +15,11 @@ jobs:
         with:
           type: no_exclude
           chroms: separate
+      - name: Excluded
+        uses: ./.github/actions/acceptance_test
+        with:
+          type: exclude
+          chroms: separate
   all:
     name: All Chroms
     runs-on: ubuntu-latest
@@ -27,4 +32,9 @@ jobs:
         uses: ./.github/actions/acceptance_test
         with:
           type: no_exclude
+          chroms: all
+      - name: Excluded
+        uses: ./.github/actions/acceptance_test
+        with:
+          type: exclude
           chroms: all
