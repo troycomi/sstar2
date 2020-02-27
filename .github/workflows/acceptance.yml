@@ -1,0 +1,30 @@
+name: AcceptanceTests
+on: [push, pull_request]
+
+jobs:
+  single:
+    name: Single Chroms
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - name: No excluded
+        uses: ./.github/actions/acceptance_test
+        with:
+          type: no_exclude
+          chroms: separate
+  all:
+    name: All Chroms
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - name: No excluded
+        uses: ./.github/actions/acceptance_test
+        with:
+          type: no_exclude
+          chroms: all

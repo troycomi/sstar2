@@ -1,4 +1,5 @@
-![](https://github.com/troycomi/sstar2/workflows/CI/badge.svg)
+![](https://github.com/troycomi/sstar2/workflows/UnitTests/badge.svg)
+![](https://github.com/troycomi/sstar2/workflows/AcceptanceTests/badge.svg)
 
 # sstar2
 C++ implementation of sstar analysis
