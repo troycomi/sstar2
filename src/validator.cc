@@ -134,12 +134,17 @@ unsigned long BaseRegions::getEnd(const std::string chromosome){
 bool BaseRegions::inRegion(const std::string chromosome, unsigned long position){
     if(positions.count(chromosome) == 0)
         return false;
+    // TODO search backward, exit if past possible
     // search through positions for one in (start, end]
-    for(auto start = positions[chromosome].begin(), end = std::next(start);
-            start != positions[chromosome].end();
-            std::advance(start, 2), std::advance(end, 2))
+    for(auto end = positions[chromosome].rbegin(), start = std::next(end);
+            end != positions[chromosome].rend();
+            std::advance(start, 2), std::advance(end, 2)){
         if(*start < position && position <= *end)
             return true;
+        else if(position > *end)
+            return false;
+    }
+        
     return false;
 
 }
@@ -151,7 +156,7 @@ void BaseRegions::write(std::ostream &strm) const{
     else{
         for(auto &position : positions){
             strm << position.first << ':';
-            for (auto pos : position.second)
+            for (auto &pos : position.second)
                 strm << pos << ',';
             strm << '\n';
         }
