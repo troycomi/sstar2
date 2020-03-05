@@ -77,6 +77,10 @@ void WindowGenerator::initialize_window(){
     }
 }
 
+void WindowGenerator::add_validator(std::unique_ptr<Validator> validator){
+    validators.push_back(std::move(validator));
+}
+
 bool WindowGenerator::next_window(){
     // updates public facing window to next value
     // at the start, vcf_line is either empty or contains the last,
@@ -191,7 +195,7 @@ void Window::reset_window(std::string chrom,
     chromosome = chrom;
     start = 0;
     end = length;
-    callable_bases = length;  // no support for masking yet
+    callable_bases.set(chrom, start, end);
     for(unsigned int i = 0; i < buckets.size(); ++i)
         buckets[i].reset_bucket(i*step, (i+1)*step);
 }
@@ -202,10 +206,19 @@ void Window::step(unsigned int step){
     buckets[0].reset_bucket(buckets.back().end,
             buckets.back().end + step);
     end += step;
+    // update callable_bases
+    callable_bases.set(chromosome, start, end);
     // cycle buckets
     std::rotate(buckets.begin(),
             buckets.begin()+1,
             buckets.end());
+}
+
+unsigned int WindowGenerator::callable_length(){
+    for(auto const &validator : validators){
+        validator->updateCallable(window.callable_bases);
+    }
+    return window.callable_bases.totalLength();
 }
 
 void WindowBucket::reset_bucket(unsigned int start, unsigned int end){

@@ -275,7 +275,7 @@ TEST(WindowGenerator, CanResetWindow){
     ASSERT_STREQ(window.chromosome.c_str(), "chrom");
     ASSERT_EQ(window.start, 0);
     ASSERT_EQ(window.end, 10);
-    ASSERT_EQ(window.callable_bases, 10);
+    ASSERT_EQ(window.callable_bases.totalLength(), 10);
     ASSERT_EQ(window.buckets.size(), 0);
 
     // add some buckets
@@ -498,7 +498,7 @@ TEST(WindowGenerator, CanRecordValues){
 
     window.record(line, targets, 0);
 
-    ASSERT_EQ(window.callable_bases, 10);
+    ASSERT_EQ(window.callable_bases.totalLength(), 10);
     ASSERT_EQ(window.total_snps(), 6);
     ASSERT_EQ(window.reference_snps(), 1);
     ASSERT_EQ(window.individual_snps(0), 3);
@@ -523,7 +523,7 @@ TEST(WindowGenerator, CanRecordValues){
 
     window.record(line, targets, 1);  // only reference is recorded
 
-    ASSERT_EQ(window.callable_bases, 10);
+    ASSERT_EQ(window.callable_bases.totalLength(), 10);
     ASSERT_EQ(window.total_snps(), 7);
     ASSERT_EQ(window.reference_snps(), 2);
     ASSERT_EQ(window.individual_snps(0), 3);

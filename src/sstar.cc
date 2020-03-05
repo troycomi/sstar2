@@ -15,7 +15,7 @@ void SStarCaller::write_header(std::ostream &output){
 }
 
 void SStarCaller::write_window(std::ostream &output,
-                const WindowGenerator &generator){
+                WindowGenerator &generator){
     unsigned int total_snps = generator.window.total_snps();
     unsigned int ref_snps = generator.window.reference_snps();
     for(unsigned int i = 0; i < generator.targets.size(); ++i){
@@ -92,7 +92,7 @@ void SStarCaller::write_window(std::ostream &output,
             }
             output << '\t';
         }
-        output << generator.window.callable_bases << '\n';
+        output << generator.callable_length() << '\n';
     }
 }
 

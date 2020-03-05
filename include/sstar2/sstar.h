@@ -25,7 +25,7 @@ class SStarCaller{
         void write_header(std::ostream &output);
         // write the current window in generator
         void write_window(std::ostream &output,
-                const WindowGenerator &generator);
+                WindowGenerator &generator);
         // calculates sstar and updates the windowGT to include just snps
         long sstar(std::vector<WindowGT> &genotypes);
 };

@@ -7,6 +7,7 @@
 #include "CLI11/CLI11.hpp"
 #include "sstar2/sstar.h"
 #include "sstar2/window_generator.h"
+#include "sstar2/validator.h"
 
 int main(int argc, char** argv)
 {
@@ -42,13 +43,23 @@ int main(int argc, char** argv)
     app.add_option("--match-bonus", bonus, "Match bonus for sstar; default 5000");
     app.add_option("--mismatch-penalty", penalty, "Mismatch penalty for sstar; default -10000");
 
+    std::string positiveBed = "";
+    app.add_option("--include-bed", positiveBed,
+            "Bed file with regions to include")
+        ->check(CLI::ExistingFile);
+
+    std::string negativeBed = "";
+    app.add_option("--exclude-bed", negativeBed,
+            "Bed file with regions to exclude")
+        ->check(CLI::ExistingFile);
+
     std::string outfile = "-";
     app.add_option("-o,--output", outfile,
             "Output file; can accept input redirection; default stdout");
 
     CLI11_PARSE(app, argc, argv);
 
-    std::ifstream vcf, popdata;
+    std::ifstream vcf, popdata, posBed, negBed;
     vcf.open(vcf_file);
     popdata.open(popfile);
 
@@ -75,6 +86,20 @@ int main(int argc, char** argv)
 
     WindowGenerator generator(length, step);
     generator.initialize(vcf, popdata, target_set, reference_set, excluded_set);
+
+    // add validators
+    if(positiveBed != ""){
+        posBed.open(positiveBed);
+        generator.add_validator(std::unique_ptr<Validator>(
+                    new PositiveBedValidator(&posBed)));
+    }
+
+    if(negativeBed != ""){
+        negBed.open(negativeBed);
+        generator.add_validator(std::unique_ptr<Validator>(
+                    new NegativeBedValidator(&negBed)));
+    }
+
     SStarCaller sstar{bonus, penalty};
     sstar.write_header(output);
 

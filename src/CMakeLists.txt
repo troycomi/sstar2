@@ -25,4 +25,4 @@ add_executable(sstar2 main.cc ${SStar_SOURCE_DIR}/include/CLI11/CLI11.hpp)
 # sstar window_generator population_data vcf_file
 target_include_directories(sstar2 PUBLIC ../include)
 target_link_libraries(sstar2
-    sstar window_generator)
+    sstar window_generator validator)

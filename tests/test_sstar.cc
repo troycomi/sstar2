@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "sstar2/sstar.h"
+#include "sstar2/validator.h"
 
 using testing::ElementsAre;
 
@@ -19,33 +20,31 @@ TEST(SSTAR, CanWriteHeader){
 }
 
 class SStarFixtureEmpty : public ::testing::Test{
+    // empty because first window contains nothing
     protected:
         void SetUp(){
             std::set<std::string> target, reference, exclude;
             target.insert("targ");
             reference.insert("ref");
-            std::string vcf_str(
-                    "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\t"
-                    "FORMAT\tmsp_0\tmsp_1\tmsp_2\tmsp_3\tmsp_4\tmsp_5\tref\n"
-                    "1\t10\t.\tA\tT\t.\tPASS\t.\tGT\t1|0\t1|0\t0|0\t1|1\t1|1\t0|0\t0|0\n"
-                    );
-            std::string pop_str(
-                    "samp\tpop\tsuper_pop\n"
-                    "msp_0\tpop0\ttarg\n"
-                    "msp_1\tpop1\ttarg\n"
-                    "msp_2\tpop2\ttarg\n"
-                    "msp_3\tpop3\ttarg\n"
-                    "msp_4\tpop4\ttarg\n"
-                    "msp_5\tpop5\ttarg\n"
-                    "ref\t.\tref\n"
-                    );
-            std::istringstream vcf(vcf_str);
-            std::istringstream pop(pop_str);
             generator.initialize(vcf, pop, target, reference, exclude);
-            generator.next_window();
         }
         WindowGenerator generator{5, 2};
         SStarCaller sstar;
+        std::istringstream vcf{
+            "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\t"
+            "FORMAT\tmsp_0\tmsp_1\tmsp_2\tmsp_3\tmsp_4\tmsp_5\tref\n"
+            "1\t10\t.\tA\tT\t.\tPASS\t.\tGT\t1|0\t1|0\t0|0\t1|1\t1|1\t0|0\t0|0\n"
+        };
+        std::istringstream pop{
+            "samp\tpop\tsuper_pop\n"
+            "msp_0\tpop0\ttarg\n"
+            "msp_1\tpop1\ttarg\n"
+            "msp_2\tpop2\ttarg\n"
+            "msp_3\tpop3\ttarg\n"
+            "msp_4\tpop4\ttarg\n"
+            "msp_5\tpop5\ttarg\n"
+            "ref\t.\tref\n"
+        };
 };
 
 class SStarFixtureNormal : public ::testing::Test{
@@ -54,39 +53,37 @@ class SStarFixtureNormal : public ::testing::Test{
             std::set<std::string> target, reference, exclude;
             target.insert("targ");
             reference.insert("ref");
-            std::string vcf_str(
-                    "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\t"
-                    "FORMAT\tmsp_0\tmsp_1\tmsp_2\tmsp_3\tmsp_4\tmsp_5\tref\n"
-                    "1\t10\t.\tA\tT\t.\tPASS\t.\tGT\t1|0\t1|0\t0|0\t1|1\t1|1\t0|0\t0|0\n"
-                    "1\t15\t.\tA\tT\t.\tPASS\t.\tGT\t1|0\t1|1\t0|0\t0|0\t0|0\t0|0\t0|0\n"
-                    "1\t30\t.\tA\tT\t.\tPASS\t.\tGT\t1|0\t0|1\t0|0\t0|0\t0|0\t0|0\t0|0\n"
-                    "1\t45\t.\tA\tT\t.\tPASS\t.\tGT\t1|0\t0|0\t0|0\t0|1\t0|0\t0|0\t0|0\n"
-                    "1\t5382\t.\tA\tT\t.\tPASS\t. \tGT\t0|0\t0|0\t1|0\t0|0\t0|0\t0|0\t1|0\n"
-                    "1\t28610\t.\tA\tT\t.\tPASS\t.\tGT\t0|0\t0|0\t0|1\t0|0\t0|0\t0|0\t0|0\n"
-                    "1\t32662\t.\tA\tT\t.\tPASS\t.\tGT\t0|0\t0|0\t1|0\t0|0\t0|0\t0|0\t1|0\n"
-                    "1\t35985\t.\tA\tT\t.\tPASS\t.\tGT\t0|0\t0|0\t1|1\t0|0\t0|0\t0|0\t0|0\n"
-                    );
-            std::string pop_str(
-                    "samp\tpop\tsuper_pop\n"
-                    "msp_0\tpop0\ttarg\n"
-                    "msp_1\tpop1\tnothing\n"
-                    "msp_2\tpop2\ttarg\n"
-                    "msp_3\tpop3\ttarg\n"
-                    "msp_4\tpop4\ttarg\n"
-                    "msp_5\tpop5\ttarg\n"
-                    "ref\t.\tref\n"
-                    );
-            std::istringstream vcf(vcf_str);
-            std::istringstream pop(pop_str);
             generator.initialize(vcf, pop, target, reference, exclude);
-            generator.next_window();
         }
         WindowGenerator generator{50000, 10000};
         SStarCaller sstar;
+        std::istringstream vcf{
+            "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\t"
+            "FORMAT\tmsp_0\tmsp_1\tmsp_2\tmsp_3\tmsp_4\tmsp_5\tref\n"
+            "1\t10\t.\tA\tT\t.\tPASS\t.\tGT\t1|0\t1|0\t0|0\t1|1\t1|1\t0|0\t0|0\n"
+            "1\t15\t.\tA\tT\t.\tPASS\t.\tGT\t1|0\t1|1\t0|0\t0|0\t0|0\t0|0\t0|0\n"
+            "1\t30\t.\tA\tT\t.\tPASS\t.\tGT\t1|0\t0|1\t0|0\t0|0\t0|0\t0|0\t0|0\n"
+            "1\t45\t.\tA\tT\t.\tPASS\t.\tGT\t1|0\t0|0\t0|0\t0|1\t0|0\t0|0\t0|0\n"
+            "1\t5382\t.\tA\tT\t.\tPASS\t. \tGT\t0|0\t0|0\t1|0\t0|0\t0|0\t0|0\t1|0\n"
+            "1\t28610\t.\tA\tT\t.\tPASS\t.\tGT\t0|0\t0|0\t0|1\t0|0\t0|0\t0|0\t0|0\n"
+            "1\t32662\t.\tA\tT\t.\tPASS\t.\tGT\t0|0\t0|0\t1|0\t0|0\t0|0\t0|0\t1|0\n"
+            "1\t35985\t.\tA\tT\t.\tPASS\t.\tGT\t0|0\t0|0\t1|1\t0|0\t0|0\t0|0\t0|0\n"
+        };
+        std::istringstream pop{
+            "samp\tpop\tsuper_pop\n"
+            "msp_0\tpop0\ttarg\n"
+            "msp_1\tpop1\tnothing\n"
+            "msp_2\tpop2\ttarg\n"
+            "msp_3\tpop3\ttarg\n"
+            "msp_4\tpop4\ttarg\n"
+            "msp_5\tpop5\ttarg\n"
+            "ref\t.\tref\n"
+        };
 };
 
 TEST_F(SStarFixtureEmpty, CanWriteEmptyWindow){
     std::ostringstream outfile;
+    generator.next_window();
     sstar.write_window(outfile, generator);
     ASSERT_STREQ(outfile.str().c_str(),
             // chrom, start end, snps, indiv and pop
@@ -106,8 +103,38 @@ TEST_F(SStarFixtureEmpty, CanWriteEmptyWindow){
             );
 }
 
+TEST_F(SStarFixtureEmpty, CanWriteEmptyWindowWithValidators){
+    std::ostringstream outfile;
+    std::istringstream infile(
+            "1\t0\t2\n"
+            "1\t8\t10\n"
+        );
+    generator.add_validator(std::unique_ptr<Validator>(
+                new PositiveBedValidator(&infile)));
+
+    generator.next_window();
+    sstar.write_window(outfile, generator);
+    ASSERT_STREQ(outfile.str().c_str(),
+            // chrom, start end, snps, indiv and pop
+            "1\t0\t5\t0\t0\t0\tmsp_0\tpop0\t"
+            // sstar related stuff, callable bases
+            "0\t0\t.\t0\t0\t0\t0\t0\t0\t0\t0\t.\t2\n"
+            "1\t0\t5\t0\t0\t0\tmsp_1\tpop1\t"
+            "0\t0\t.\t0\t0\t0\t0\t0\t0\t0\t0\t.\t2\n"
+            "1\t0\t5\t0\t0\t0\tmsp_2\tpop2\t"
+            "0\t0\t.\t0\t0\t0\t0\t0\t0\t0\t0\t.\t2\n"
+            "1\t0\t5\t0\t0\t0\tmsp_3\tpop3\t"
+            "0\t0\t.\t0\t0\t0\t0\t0\t0\t0\t0\t.\t2\n"
+            "1\t0\t5\t0\t0\t0\tmsp_4\tpop4\t"
+            "0\t0\t.\t0\t0\t0\t0\t0\t0\t0\t0\t.\t2\n"
+            "1\t0\t5\t0\t0\t0\tmsp_5\tpop5\t"
+            "0\t0\t.\t0\t0\t0\t0\t0\t0\t0\t0\t.\t2\n"
+            );
+}
+
 TEST_F(SStarFixtureNormal, CanWriteWindow){
     std::ostringstream outfile;
+    generator.next_window();
     sstar.write_window(outfile, generator);
     ASSERT_STREQ(outfile.str().c_str(),
             // chrom, start end, snps, indiv and pop

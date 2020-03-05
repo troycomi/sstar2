@@ -34,7 +34,8 @@ struct WindowBucket {
 struct Window {
     std::string chromosome;
     // contains positions in (start, end]
-    unsigned long start=0, end=0, callable_bases=0;
+    unsigned long start=0, end=0;
+    BaseRegions callable_bases;
     std::deque<WindowBucket> buckets;
     void reset_window(std::string chrom, unsigned int length, unsigned int step);
     void step(unsigned int step);
@@ -80,6 +81,7 @@ class WindowGenerator{
                 std::set<std::string> &target,
                 std::set<std::string> &reference,
                 std::set<std::string> &exclude);
-
+        void add_validator(std::unique_ptr<Validator> validator);
+        unsigned int callable_length();
         bool next_window();
 };
