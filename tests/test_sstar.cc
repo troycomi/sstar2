@@ -153,6 +153,33 @@ TEST_F(SStarFixtureNormal, CanWriteWindow){
     ASSERT_FALSE(generator.next_window());
 }
 
+TEST_F(SStarFixtureNormal, CanWriteWindowWithValidators){
+    std::ostringstream outfile;
+
+    std::istringstream infile(
+            "1\t100\t800\n"
+        );
+    generator.add_validator(std::unique_ptr<Validator>(
+                new NegativeBedValidator(&infile)));
+    generator.next_window();
+    sstar.write_window(outfile, generator);
+    ASSERT_STREQ(outfile.str().c_str(),
+            // chrom, start end, snps, indiv and pop
+            "1\t0\t50000\t8\t4\t6\tmsp_0\tpop0\t"
+            // sstar related stuff, callable bases
+            "10035\t3\t10,30,45\t10\t45\t0\t0\t10\t45\t3\t0\t1,1,1\t49300\n"
+            "1\t0\t50000\t8\t2\t4\tmsp_2\tpop2\t"
+            "0\t0\t.\t0\t0\t0\t0\t0\t0\t0\t0\t.\t49300\n"
+            "1\t0\t50000\t8\t2\t4\tmsp_3\tpop3\t"
+            "0\t0\t.\t0\t0\t0\t0\t0\t0\t0\t0\t.\t49300\n"
+            "1\t0\t50000\t8\t1\t3\tmsp_4\tpop4\t"
+            "0\t0\t.\t0\t0\t0\t0\t0\t0\t0\t0\t.\t49300\n"
+            "1\t0\t50000\t8\t0\t2\tmsp_5\tpop5\t"
+            "0\t0\t.\t0\t0\t0\t0\t0\t0\t0\t0\t.\t49300\n"
+            );
+    ASSERT_FALSE(generator.next_window());
+}
+
 TEST(SStarMismatches, TiedScoreUseLonger){
     std::vector<WindowGT>genotypes{
         {7462931, 3},
@@ -162,9 +189,6 @@ TEST(SStarMismatches, TiedScoreUseLonger){
         {7493191, 2}};
     SStarCaller sstar;
     ASSERT_EQ(sstar.sstar(genotypes), 34372);
-    for (auto &gt : genotypes)
-        std::cout << gt.position << ',' << gt.genotype << ' ';
-    std::cout << '\n';
     ASSERT_THAT(genotypes, ElementsAre(
                 WindowGT{7462931, 3},
                 WindowGT{7467931, 3},

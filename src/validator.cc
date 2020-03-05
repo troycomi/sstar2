@@ -1,21 +1,20 @@
 #include "sstar2/validator.h"
 
 void BaseRegions::add(const std::string &chrom, unsigned long start, unsigned long end){
-    // add region, clearing if needed.  assumes sorted input with no overlap
-    if(chrom != chromosome){
-        set(chrom, start, end);
-        return;
+    // add region.  assumes sorted input with no overlap
+    if(positions.count(chrom) == 0)
+        positions.insert(std::pair<std::string, std::list<unsigned long>>(
+                    chrom, {start, end}));
+    else{
+        positions[chrom].push_back(start);
+        positions[chrom].push_back(end);
     }
-    positions.push_back(start);
-    positions.push_back(end);
 }
 
 void BaseRegions::set(const std::string &chrom, unsigned long start, unsigned long end){
     // set region to chromosome with a single entry
-    chromosome = chrom;
     positions.clear();
-    positions.push_back(start);
-    positions.push_back(end);
+    add(chrom, start, end);
 }
 
 unsigned long BaseRegions::totalLength(){
@@ -24,109 +23,139 @@ unsigned long BaseRegions::totalLength(){
         return 0;
     unsigned long result = 0;
     // this keeps start and end in step
-    for(auto start = positions.begin(), end = std::next(start);
-            start != positions.end();
-            std::advance(start, 2), std::advance(end, 2))
-        result += *end - *start;
+    for(auto &pair : positions){
+        for(auto start = pair.second.begin(), end = std::next(start);
+                start != pair.second.end();
+                std::advance(start, 2), std::advance(end, 2))
+            result += *end - *start;
+    }
     return result;
 }
 
 void BaseRegions::intersect(const BaseRegions &other){
     // assume both are strictly increasing with no overlap within segments
-    if(other.positions.empty() || chromosome != other.chromosome){
-        positions.clear();
-        return;
+    for (auto &pos : positions){
+        auto otherpos = other.positions.find(pos.first);
+        // not in other or is empty
+        if(otherpos == other.positions.end() || otherpos->second.empty()){
+            pos.second.clear();
+            return;
+        }
+        auto mystart = pos.second.begin(), myend = std::next(mystart);
+        auto otherstart = otherpos->second.begin(), otherend = std::next(otherstart);
+        while(mystart != pos.second.end()
+                && otherstart != otherpos->second.end()){
+            if(*mystart >= *otherend){  // other too far behind
+                std::advance(otherstart, 2);
+                std::advance(otherend, 2);
+                continue;
+            }
+            if(*otherstart >= *myend){  // mine too far behind
+                // remove this as it doesn't match
+                mystart = pos.second.erase(mystart, std::next(myend));
+                myend = std::next(mystart);
+                continue;
+            }
+            // now we have some overlap
+            if(*otherstart > *mystart)  // start must be cut
+                *mystart = *otherstart;
+            // end can be used again...
+            if(*otherend < *myend){
+                // set this end to otherend, new start there as well
+                pos.second.insert(myend, 2, *otherend);
+                std::advance(mystart, 2);
+                std::advance(otherstart, 2);
+                std::advance(otherend, 2);
+            }
+            else{  // otherend > mine, go to next
+                std::advance(mystart, 2);
+                std::advance(myend, 2);
+            }
+        }
+        if(mystart != pos.second.end())  // remove any remaining
+            pos.second.erase(mystart, pos.second.end());
     }
-    auto mystart = positions.begin(), myend = std::next(mystart);
-    auto otherstart = other.positions.begin(), otherend = std::next(otherstart);
-    while(mystart != positions.end() && otherstart != other.positions.end()){
-        if(*mystart >= *otherend){  // other too far behind
-            std::advance(otherstart, 2);
-            std::advance(otherend, 2);
-            continue;
-        }
-        if(*otherstart >= *myend){  // mine too far behind
-            // remove this as it doesn't match
-            mystart = positions.erase(mystart, std::next(myend));
-            myend = std::next(mystart);
-            continue;
-        }
-        // now we have some overlap
-        if(*otherstart > *mystart)  // start must be cut
-            *mystart = *otherstart;
-        // end can be used again...
-        if(*otherend < *myend){
-            // set this end to otherend, new start there as well
-            positions.insert(myend, 2, *otherend);
-            std::advance(mystart, 2);
-            std::advance(otherstart, 2);
-            std::advance(otherend, 2);
-        }
-        else{  // otherend > mine, go to next
-            std::advance(mystart, 2);
-            std::advance(myend, 2);
-        }
-    }
-    if(mystart != positions.end())  // remove any remaining
-        positions.erase(mystart, positions.end());
 }
 
 void BaseRegions::subtract(const BaseRegions &other){
     // assume both are strictly increasing with no overlap within segments
-    // nothing to subtract
-    if(other.positions.empty() || chromosome != other.chromosome){
-        return;
-    }
-    auto mystart = positions.begin(), myend = std::next(mystart);
-    auto otherstart = other.positions.begin(), otherend = std::next(otherstart);
-    while(mystart != positions.end() && otherstart != other.positions.end()){
-        if(*mystart >= *otherend){  // other too far behind
-            std::advance(otherstart, 2);
-            std::advance(otherend, 2);
+    for (auto &pos : positions){
+        auto otherpos = other.positions.find(pos.first);
+        // not in other or is empty
+        // nothing to subtract
+        if(otherpos == other.positions.end() || otherpos->second.empty())
             continue;
-        }
-        if(*otherstart >= *myend){  // mine too far behind
-            std::advance(mystart, 2);
-            std::advance(myend, 2);
-            continue;
-        }
-        // now we have some overlap
-        if(*otherstart > *mystart){  // start after mine
-            // keep first part
-            positions.insert(myend, 2, *otherstart);
-            std::advance(mystart, 2);
-        }
+    
+        auto mystart = pos.second.begin(), myend = std::next(mystart);
+        auto otherstart = otherpos->second.begin(), otherend = std::next(otherstart);
+        while(mystart != pos.second.end() && otherstart != otherpos->second.end()){
+            if(*mystart >= *otherend){  // other too far behind
+                std::advance(otherstart, 2);
+                std::advance(otherend, 2);
+                continue;
+            }
+            if(*otherstart >= *myend){  // mine too far behind
+                std::advance(mystart, 2);
+                std::advance(myend, 2);
+                continue;
+            }
+            // now we have some overlap
+            if(*otherstart > *mystart){  // start after mine
+                // keep first part
+                pos.second.insert(myend, 2, *otherstart);
+                std::advance(mystart, 2);
+            }
 
-        if(*otherend < *myend){  // other end in region
-            // move end
-            *mystart = *otherend;
-            // advance other, mine can be used
-            std::advance(otherstart, 2);
-            std::advance(otherend, 2);
-        }
-        else{  // end beyond, remove this consider other again
-            mystart = positions.erase(mystart, std::next(myend));
-            myend = std::next(mystart);
+            if(*otherend < *myend){  // other end in region
+                // move end
+                *mystart = *otherend;
+                // advance other, mine can be used
+                std::advance(otherstart, 2);
+                std::advance(otherend, 2);
+            }
+            else{  // end beyond, remove this consider other again
+                mystart = pos.second.erase(mystart, std::next(myend));
+                myend = std::next(mystart);
+            }
         }
     }
+}
+
+const std::string BaseRegions::getChromosome() const{
+    return positions.begin()->first;
+}
+
+unsigned long BaseRegions::getEnd(const std::string chromosome){
+    if(positions.count(chromosome) == 0 || positions[chromosome].empty())
+        return 0;
+    return positions[chromosome].back();
+}
+
+bool BaseRegions::inRegion(const std::string chromosome, unsigned long position){
+    if(positions.count(chromosome) == 0)
+        return false;
+    // search through positions for one in (start, end]
+    for(auto start = positions[chromosome].begin(), end = std::next(start);
+            start != positions[chromosome].end();
+            std::advance(start, 2), std::advance(end, 2))
+        if(*start < position && position <= *end)
+            return true;
+    return false;
+
 }
 
 void BaseRegions::write(std::ostream &strm) const{
-    if (chromosome == ""){
+    if (positions.empty()){
         strm << "No region\n";
     }
     else{
-        strm << chromosome << ':';
-        for (auto pos : positions)
-            strm << pos << ',';
-        strm << '\n';
+        for(auto &position : positions){
+            strm << position.first << ':';
+            for (auto pos : position.second)
+                strm << pos << ',';
+            strm << '\n';
+        }
     }
-}
-
-unsigned long BaseRegions::getEnd() const{
-    if(positions.size() == 0)
-        return 0;
-    return positions.back();
 }
 
 std::ostream& operator<<(std::ostream &strm, const BaseRegions region){
@@ -152,10 +181,10 @@ bool BedFile::inBed(std::string chrom, unsigned long position){
     for(;;){
         // current location is beyond query
         if(chrom < chromosome)
-            return false;
+            return regions.inRegion(chrom, position);
         if(chrom == chromosome){
             if(position <= start)
-                return false;
+                return regions.inRegion(chrom, position);
             else if(end < position)
                 readline();
             else
@@ -164,7 +193,7 @@ bool BedFile::inBed(std::string chrom, unsigned long position){
         if(chrom > chromosome)
             readline();
         if(chromosome == "")
-            return false;
+            return regions.inRegion(chrom, position);
     }
 }
 
@@ -195,7 +224,8 @@ bool PositiveBedValidator::isValid(const VcfEntry &entry){
 
 void PositiveBedValidator::updateCallable(BaseRegions &callable){
     // need to check if end is in bedfile to force it to read through end
-    bedfile.inBed(callable.getChromosome(), callable.getEnd());
+    auto chrom = callable.getChromosome();
+    bedfile.inBed(chrom, callable.getEnd(chrom));
     bedfile.intersect(callable);
 }
 
@@ -205,7 +235,8 @@ bool NegativeBedValidator::isValid(const VcfEntry &entry){
 
 void NegativeBedValidator::updateCallable(BaseRegions &callable){
     // need to check if end is in bedfile to force it to read through end
-    bedfile.inBed(callable.getChromosome(), callable.getEnd());
+    auto chrom = callable.getChromosome();
+    bedfile.inBed(chrom, callable.getEnd(chrom));
     bedfile.subtract(callable);
 }
 

@@ -4,14 +4,14 @@
 #include <sstream>
 #include <vector>
 #include <list>
+#include <map>
 
 #include "sstar2/vcf_file.h"
 
 class BaseRegions{
-    // contains a chromosome and list of start/end positions
+    // contains a chromosome pointing to a list of start/end positions
     // works to store a bed file or callable bases
-    std::string chromosome;
-    std::list<unsigned long> positions;
+    std::map<std::string, std::list<unsigned long>> positions;
 
     public:
         // add region, clearing if needed.  Handles overlaps, assumes sorted input
@@ -23,8 +23,10 @@ class BaseRegions{
         void intersect(const BaseRegions &other);
         void subtract(const BaseRegions &other);
         void write(std::ostream &strm) const;
-        const std::string getChromosome() const{return chromosome;}
-        unsigned long getEnd() const;
+        // get the first chromosome
+        const std::string getChromosome() const;
+        unsigned long getEnd(const std::string chromosome);
+        bool inRegion(const std::string chromosome, unsigned long position);
 };
 std::ostream& operator<<(std::ostream &strm, const BaseRegions region);
 
@@ -83,4 +85,3 @@ class NegativeBedValidator : public Validator{
         bool isValid(const VcfEntry &entry);
         void updateCallable(BaseRegions &callable);
 };
-

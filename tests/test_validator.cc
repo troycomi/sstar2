@@ -41,7 +41,7 @@ TEST(BedValidator, CanTestBed){
     ASSERT_FALSE(b.inBed("asdf", 5));
     ASSERT_FALSE(b.inBed("asdf", 6));
     ASSERT_FALSE(b.inBed("asdf", 7));
-    ASSERT_FALSE(b.inBed("4", 30));
+    ASSERT_TRUE(b.inBed("4", 30));
 }
 
 TEST(BedValidator, PositiveBedValidator){
@@ -98,7 +98,7 @@ TEST(BedValidator, PositiveBedCallable){
 
     entry.chromosome = "1";
     entry.position = 5;
-    ASSERT_FALSE(validator.isValid(entry));  // so this is now false
+    ASSERT_TRUE(validator.isValid(entry));
 
     entry.chromosome = "4";
     entry.position = 20;
@@ -120,6 +120,12 @@ TEST(BedValidator, PositiveBedCallable){
     ASSERT_FALSE(validator.isValid(entry));
     ASSERT_FALSE(validator.isValid(entry));
 
+    region.set("1", 0, 100);
+    validator.updateCallable(region);
+    ASSERT_EQ(region.totalLength(), 20);
+    region.set("2", 0, 100);
+    validator.updateCallable(region);
+    ASSERT_EQ(region.totalLength(), 10);
     region.set("4", 0, 100);
     validator.updateCallable(region);
     ASSERT_EQ(region.totalLength(), 10);
@@ -175,19 +181,12 @@ TEST(BedValidator, NegativeBedCallable){
     VcfEntry entry("", 0);
 
     validator.updateCallable(region);
-    ASSERT_EQ(region.totalLength(), 100);
+    ASSERT_EQ(region.totalLength(), 80);
 
     entry.chromosome = "1";
-    entry.position = 1;
+    entry.position = 21;
     ASSERT_FALSE(validator.isValid(entry));
-    validator.updateCallable(region);
-    ASSERT_EQ(region.totalLength(), 90);  // remove first
-    entry.position = 10;
-    ASSERT_FALSE(validator.isValid(entry));
-    validator.updateCallable(region);
-    ASSERT_EQ(region.totalLength(), 90);
-    entry.position = 11;
-    ASSERT_TRUE(validator.isValid(entry));
+    region.set("1", 0, 100);
     validator.updateCallable(region);
     ASSERT_EQ(region.totalLength(), 80);
 
@@ -197,7 +196,7 @@ TEST(BedValidator, NegativeBedCallable){
 
     region.set("1", 0, 100);
     validator.updateCallable(region);
-    ASSERT_EQ(region.totalLength(), 100);
+    ASSERT_EQ(region.totalLength(), 80);
 
     // bed is empty
     region.set("4", 0, 100);
@@ -207,6 +206,12 @@ TEST(BedValidator, NegativeBedCallable){
     ASSERT_TRUE(validator.isValid(entry));
     ASSERT_TRUE(validator.isValid(entry));
     ASSERT_TRUE(validator.isValid(entry));
+    region.set("1", 0, 100);
+    validator.updateCallable(region);
+    ASSERT_EQ(region.totalLength(), 80);
+    region.set("2", 0, 100);
+    validator.updateCallable(region);
+    ASSERT_EQ(region.totalLength(), 90);
     region.set("4", 0, 100);
     validator.updateCallable(region);
     ASSERT_EQ(region.totalLength(), 90);
@@ -270,31 +275,29 @@ TEST(BaseRegions, CanSet){
 TEST(BaseRegions, CanAdd){
     BaseRegions region;
     std::ostringstream output;
-    std::string chrom = "chr1";
 
-    region.add(chrom, 4, 7);
+    region.add("chr1", 4, 7);
     output << region;
     ASSERT_STREQ(output.str().c_str(), "chr1:4,7,\n");
     ASSERT_EQ(region.totalLength(), 3);
 
     output.str("");
-    region.add(chrom, 16, 19);
+    region.add("chr1", 16, 19);
     output << region;
     ASSERT_STREQ(output.str().c_str(), "chr1:4,7,16,19,\n");
     ASSERT_EQ(region.totalLength(), 6);
 
     output.str("");
-    chrom = "chr2";
-    region.add(chrom, 16, 19);
+    region.add("chr2", 16, 19);
     output << region;
-    ASSERT_STREQ(output.str().c_str(), "chr2:16,19,\n");
-    ASSERT_EQ(region.totalLength(), 3);
+    ASSERT_STREQ(output.str().c_str(), "chr1:4,7,16,19,\nchr2:16,19,\n");
+    ASSERT_EQ(region.totalLength(), 9);
 
     output.str("");
-    region.add(chrom, 19, 21);
+    region.add("chr2", 19, 21);
     output << region;
-    ASSERT_STREQ(output.str().c_str(), "chr2:16,19,19,21,\n");
-    ASSERT_EQ(region.totalLength(), 5);
+    ASSERT_STREQ(output.str().c_str(), "chr1:4,7,16,19,\nchr2:16,19,19,21,\n");
+    ASSERT_EQ(region.totalLength(), 11);
 }
 
 void setTargetSingle(BaseRegions &target){
