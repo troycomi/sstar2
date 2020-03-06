@@ -59,6 +59,8 @@ Comma separated list of reference populations or individuals
 -s,--step UINT              Window step; default 10,000
 --match-bonus INT           Match bonus for sstar; default 5000
 --mismatch-penalty INT      Mismatch penalty for sstar; default -10000
+--include-bed TEXT:FILE     Bed file with regions to include
+--exclude-bed TEXT:FILE     Bed file with regions to exclude
 -o,--output TEXT            Output file; can accept input redirection; default stdout
 ```
 
@@ -69,8 +71,13 @@ To convert from freezing-archer:
 -ref-pops AFR -ref-inds ind1 -> --references AFR,ind1
 -winlen 50000                -> --length 50000
 -winstep 10000               -> --step 10000
+--regions myfile.bbg         -> --include-bed myfile.bed
+--exclude-region myfile.bbg  -> --exclude-bed myfile.bed
 ```
-Other options are similar.
+Other options are similar.  Note that only a single bed file is accepted for
+include or exclude (though both may be specified in a run).  If multiple bed
+files need to be merged that has to be done in a separate step.  However,
+sstar2 accepts standards bed files instead of binary bed files.
 
 ```bash
 ./sstar2 \

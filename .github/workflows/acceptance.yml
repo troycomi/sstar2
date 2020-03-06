@@ -20,6 +20,16 @@ jobs:
         with:
           type: exclude
           chroms: separate
+      - name: Single bed files
+        uses: ./.github/actions/acceptance_test
+        with:
+          type: bed_single
+          chroms: separate
+      - name: Paired bed files
+        uses: ./.github/actions/acceptance_test
+        with:
+          type: bed_pair
+          chroms: separate
   all:
     name: All Chroms
     runs-on: ubuntu-latest
@@ -37,4 +47,14 @@ jobs:
         uses: ./.github/actions/acceptance_test
         with:
           type: exclude
+          chroms: all
+      - name: Single bed files
+        uses: ./.github/actions/acceptance_test
+        with:
+          type: bed_single
+          chroms: all
+      - name: Paired bed files
+        uses: ./.github/actions/acceptance_test
+        with:
+          type: bed_pair
           chroms: all

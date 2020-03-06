@@ -58,7 +58,7 @@ class BedFile{
     BaseRegions regions;
 
     public:
-        BedFile(std::istream *file) : bedfile(file) {};
+        BedFile(std::istream *file) : bedfile(file), chromosome("*") {};
         bool inBed(std::string chrom, unsigned long position);
         void intersect(BaseRegions &callable);
         void subtract(BaseRegions &callable);

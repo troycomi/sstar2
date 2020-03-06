@@ -24,7 +24,7 @@ bool VcfEntry::any_haplotype(const std::vector<unsigned int> &individuals) const
 unsigned int VcfEntry::count_haplotypes(const std::vector<unsigned int> &individuals) const{
     unsigned int result = 0;
     for (const auto &indiv : individuals){
-        result += (genotypes[indiv] != 0) + (genotypes[indiv] == 3);
+        result += genotypes[indiv] - (genotypes[indiv] >> 1);
         // this maps 0 to 0, 1 to 1, 2 to 1 and 3 to 1
     }
     return result;

@@ -184,9 +184,6 @@ bool BedFile::inBed(std::string chrom, unsigned long position){
     // assume queries are sorted in same order as bed file!
     // true if position is in (start, end]
     for(;;){
-        // current location is beyond query
-        if(chrom < chromosome)
-            return regions.inRegion(chrom, position);
         if(chrom == chromosome){
             if(position <= start)
                 return regions.inRegion(chrom, position);
@@ -195,10 +192,10 @@ bool BedFile::inBed(std::string chrom, unsigned long position){
             else
                 return true;  // start < position <= end
         }
-        if(chrom > chromosome)
-            readline();
-        if(chromosome == "")
+        else if(chromosome == "")
             return regions.inRegion(chrom, position);
+        else
+            readline();
     }
 }
 
