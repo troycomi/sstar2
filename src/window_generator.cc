@@ -17,7 +17,7 @@ void WindowGenerator::initialize(
     population.read_data(pop_file, target, reference, exclude);
     vcf = &vcf_input;
     initialize_vcf();
-    initialize_window();
+    window.initialize(length, step, targets.size());
 }
 
 void WindowGenerator::initialize_vcf(){
@@ -44,6 +44,7 @@ void WindowGenerator::initialize_vcf(){
         if(population.targets.find(el.second) != population.targets.end()){
             targets.push_back(ind);
             target_names.push_back(el.second);
+            population_names.push_back(population.target_to_population.at(el.second));
             found = true;
         }
         if(population.references.find(el.second) != population.references.end()){
@@ -65,14 +66,14 @@ void WindowGenerator::initialize_vcf(){
     next_line();
 }
 
-void WindowGenerator::initialize_window(){
+void Window::initialize(unsigned int length,
+        unsigned int step, unsigned int num_targets){
     // sets up the window structures for holding incoming vcf lines
     int num_buckets = length / step;
     num_buckets += (length % step == 0) ? 0 : 1;  //ceiling operation
-    window.buckets.resize(num_buckets);
+    buckets.resize(num_buckets);
     // initilize size of genotype vector
-    unsigned int num_targets = targets.size();
-    for (auto &bucket : window.buckets){
+    for (auto &bucket : buckets){
         bucket.genotypes.resize(num_targets);
     }
 }
@@ -190,6 +191,13 @@ unsigned int Window::individual_snps(unsigned int individual) const{
     return result;
 }
 
+void Window::fill_genotypes(std::vector<WindowGT> &genotypes, int individual) const{
+    for(const auto &bucket : buckets)
+        genotypes.insert(genotypes.end(),
+                bucket.genotypes[individual].begin(),
+                bucket.genotypes[individual].end());
+}
+
 void Window::reset_window(std::string chrom,
         unsigned int length, unsigned int step){
     chromosome = chrom;
@@ -232,9 +240,7 @@ void WindowBucket::reset_bucket(unsigned int start, unsigned int end){
 
 std::ostream& operator<<(std::ostream &strm, const Window &window){
     strm << "chrom: " << window.chromosome << "\tstart: "
-        << window.start << "\tend: " << window.end << "\nBuckets:\n";
-    for (unsigned int i = 0; i < window.buckets.size(); ++i)
-        strm << "\t#" << i << ":\n" << window.buckets[i] << '\n';
+        << window.start << "\tend: " << window.end << "\n";
     return strm;
 }
 

@@ -31,19 +31,24 @@ struct WindowBucket {
     void reset_bucket(unsigned int start, unsigned int end);
 };
 
-struct Window {
-    std::string chromosome;
-    // contains positions in (start, end]
-    unsigned long start=0, end=0;
-    BaseRegions callable_bases;
+class Window {
     std::deque<WindowBucket> buckets;
-    void reset_window(std::string chrom, unsigned int length, unsigned int step);
-    void step(unsigned int step);
-    void record(const VcfEntry &entry, const std::vector<unsigned int> &targets,
-            unsigned int reference_haplotypes);
-    unsigned int total_snps() const;
-    unsigned int reference_snps() const;
-    unsigned int individual_snps(unsigned int individual) const;
+
+    public:
+        std::string chromosome;
+        void initialize(unsigned int length, unsigned int step,
+                unsigned int num_targets);
+        // contains positions in (start, end]
+        unsigned long start=0, end=0;
+        BaseRegions callable_bases;
+        void reset_window(std::string chrom, unsigned int length, unsigned int step);
+        void step(unsigned int step);
+        void record(const VcfEntry &entry, const std::vector<unsigned int> &targets,
+                unsigned int reference_haplotypes);
+        void fill_genotypes(std::vector<WindowGT> &genotypes, int individual) const;
+        unsigned int total_snps() const;
+        unsigned int reference_snps() const;
+        unsigned int individual_snps(unsigned int individual) const;
 };
 
 std::ostream& operator<<(std::ostream &strm, const Window &window);
@@ -61,7 +66,6 @@ class WindowGenerator{
     std::vector<std::unique_ptr<Validator>> validators;
 
     void initialize_vcf();
-    void initialize_window();
     bool next_line();
     bool entry_is_valid();
 
@@ -72,6 +76,7 @@ class WindowGenerator{
         Window window;
         std::vector<unsigned int> targets;
         std::vector<std::string> target_names;
+        std::vector<std::string> population_names;
 
         WindowGenerator(unsigned int window_length, unsigned int step_size);
 

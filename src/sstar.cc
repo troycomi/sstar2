@@ -28,17 +28,14 @@ void SStarCaller::write_window(std::ostream &output,
             << indiv_snps << '\t'
             << indiv_snps + ref_snps << '\t'
             << generator.target_names[i] << '\t'
-            << generator.population.target_to_population.at(generator.target_names[i]) << '\t';
+            << generator.population_names[i] << '\t';
         if (indiv_snps <= 2)
             output << emptyline;
         else{
             // build genotypes vector
             std::vector<WindowGT> genotypes;
             genotypes.reserve(indiv_snps);
-            for(const auto &bucket : generator.window.buckets)
-                genotypes.insert(genotypes.end(),
-                        bucket.genotypes[i].begin(),
-                        bucket.genotypes[i].end());
+            generator.window.fill_genotypes(genotypes, i);
             long s_score = sstar(genotypes);
             output << s_score << '\t'
                 << genotypes.size() << '\t';
