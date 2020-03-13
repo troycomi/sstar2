@@ -157,7 +157,7 @@ void Window::record(const VcfEntry &entry,
         }
         short unsigned int gt;
         unsigned int indiv = 0;
-        // for each target, if gt != 0, recorde position and gt
+        // for each target, if gt != 0, record position and gt
         for(unsigned int target : targets){
             if((gt = entry.genotypes[target]) != 0)
                 bucket->genotypes[indiv].emplace_back(entry.position, gt);

@@ -31,6 +31,11 @@ struct WindowBucket {
     void reset_bucket(unsigned int start, unsigned int end);
 };
 
+// probably make window an abstract class and have bucket, flat, ranged varieties
+// TODO need to make a subclass flat window to handle non-step motions
+// TODO support for arbitrary regions can use this window with modifications
+// those should be mutually exclusive
+// TODO the next_window code is pretty tightly coupled to the window class...
 class Window {
     std::deque<WindowBucket> buckets;
 
