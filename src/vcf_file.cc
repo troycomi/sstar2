@@ -31,7 +31,7 @@ unsigned int VcfEntry::count_haplotypes(const std::vector<unsigned int> &individ
 }
 
 unsigned int VcfFile::initialize_individuals(const std::string line,
-        const std::set<std::string> individuals){
+        const std::set<std::string> &individuals){
     // matches individuals to the location in the vcf file
     // line is the header line of vcf with individual names
     std::stringstream stream(line);
@@ -100,7 +100,8 @@ bool VcfFile::parse_line(const char* line, VcfEntry &entry){
                 break;
 
             default:  // individuals
-                if (token == *current_indiv){
+                if (current_indiv != individual_indices.end()
+                        && token == *current_indiv){
                     if (*start == '.'){  // unknown (either . or ./.)
                         entry.genotypes[geno_count] = 0;
                     }

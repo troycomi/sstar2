@@ -86,8 +86,13 @@ bool WindowGenerator::next_window(){
     // at the start, vcf_line is either empty or contains the last,
     // unprocessed line
 
-    if(terminated)
+    if(terminated){
+        // free validators
+        for(auto & validator : validators)
+            validator.reset();
+
         return false;  // all done
+    }
 
     // last line was a new chromosome
     if(vcf_line.chromosome.compare(window.chromosome) != 0)

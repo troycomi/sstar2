@@ -34,6 +34,7 @@ class Validator{
     public:
         virtual bool isValid(const VcfEntry &entry) = 0;
         virtual void updateCallable(BaseRegions &callable) = 0;
+        virtual ~Validator() = default;
 };
 
 class FixationValidator : public Validator{
@@ -48,6 +49,7 @@ class FixationValidator : public Validator{
 
         bool isValid(const VcfEntry &entry);
         void updateCallable(BaseRegions &callable){}
+        virtual ~FixationValidator() = default;
 };
 
 class BedFile{
@@ -73,6 +75,7 @@ class PositiveBedValidator : public Validator{
 
         bool isValid(const VcfEntry &entry);
         void updateCallable(BaseRegions &callable);
+        virtual ~PositiveBedValidator() = default;
 };
 
 class NegativeBedValidator : public Validator{
@@ -84,4 +87,5 @@ class NegativeBedValidator : public Validator{
 
         bool isValid(const VcfEntry &entry);
         void updateCallable(BaseRegions &callable);
+        virtual ~NegativeBedValidator() = default;
 };
