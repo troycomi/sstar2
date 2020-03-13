@@ -118,7 +118,6 @@ TEST_F(Generator_Input, CanYieldWindow){
     gen.initialize(vcf, pop, target, reference, exclude);
 
     ASSERT_TRUE(gen.next_window());
-    std::cout << gen.window;
     ASSERT_STREQ(gen.window.chromosome.c_str(), "1");
     ASSERT_EQ(gen.window.start, 0);
     ASSERT_EQ(gen.window.end, 10);
