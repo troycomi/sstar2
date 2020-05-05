@@ -6,6 +6,8 @@ project(SStar VERSION 0.1
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+option(BUILD_TESTS "Build unit tests" OFF)
 
 if (NOT CMAKE_BUILD_TYPE)
     message(STATUS "No build type selected, default to Release")
@@ -35,7 +37,28 @@ if(GIT_FOUND AND EXISTS "${SStar_SOURCE_DIR}/.git")
         OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 else()
-    set(SSTAR_GIT_VERSION "unknown")
+    set(IBDMIX_GIT_VERSION "unknown")
+    message(STATUS "Downloading dependencies...")
+    if( NOT EXISTS "${SStar_SOURCE_DIR}/extern/CLI11/CMakeLists.txt")
+        file(DOWNLOAD
+            https://github.com/CLIUtils/CLI11/archive/b9a2f320b912aae623c4acddea06cba399b98654.zip
+            "${SStar_SOURCE_DIR}/extern/CLI11.zip"
+            SHOW_PROGRESS
+            EXPECTED_HASH MD5=222245b96453401aa366328e398ae1ad)
+        message(STATUS "Extracting CLI11")
+        execute_process(COMMAND ${CMAKE_COMMAND} -E tar -xf
+            "${SStar_SOURCE_DIR}/extern/CLI11.zip"
+            WORKING_DIRECTORY
+            "${SStar_SOURCE_DIR}/extern/"
+            )
+        file(RENAME
+            "${SStar_SOURCE_DIR}/extern/CLI11-b9a2f320b912aae623c4acddea06cba399b98654/"
+            "${SStar_SOURCE_DIR}/extern/CLI11/"
+            )
+        file(REMOVE
+            "${SStar_SOURCE_DIR}/extern/CLI11.zip"
+            )
+    endif()
 endif()
 
 if( NOT EXISTS "${SStar_SOURCE_DIR}/extern/CLI11/CMakeLists.txt")
