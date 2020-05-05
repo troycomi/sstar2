@@ -28,7 +28,7 @@ class SStarFixtureEmpty : public ::testing::Test{
             reference.insert("ref");
             generator.initialize(vcf, pop, target, reference, exclude);
         }
-        WindowGenerator generator{5, 2};
+        WindowGenerator generator{std::unique_ptr<Window>(new StepWindow(2, 5))};
         SStarCaller sstar;
         std::istringstream vcf{
             "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\t"
@@ -55,7 +55,7 @@ class SStarFixtureNormal : public ::testing::Test{
             reference.insert("ref");
             generator.initialize(vcf, pop, target, reference, exclude);
         }
-        WindowGenerator generator{50000, 10000};
+        WindowGenerator generator{std::unique_ptr<Window>(new StepWindow(10000, 50000))};
         SStarCaller sstar;
         std::istringstream vcf{
             "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\t"

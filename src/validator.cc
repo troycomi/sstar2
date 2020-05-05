@@ -125,13 +125,13 @@ const std::string BaseRegions::getChromosome() const{
     return positions.begin()->first;
 }
 
-unsigned long BaseRegions::getEnd(const std::string chromosome){
+unsigned long BaseRegions::getEnd(const std::string &chromosome){
     if(positions.count(chromosome) == 0 || positions[chromosome].empty())
         return 0;
     return positions[chromosome].back();
 }
 
-bool BaseRegions::inRegion(const std::string chromosome, unsigned long position){
+bool BaseRegions::inRegion(const std::string &chromosome, unsigned long position){
     if(positions.count(chromosome) == 0)
         return false;
     // TODO search backward, exit if past possible

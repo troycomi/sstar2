@@ -8,6 +8,7 @@ RUN apt-get update \
         ca-certificates=20180409 \
         make=4.1-9.1ubuntu1 \
         git=1:2.17.1-1ubuntu0.5 \
+        valgrind=1:3.15.0-1ubuntu3 \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 

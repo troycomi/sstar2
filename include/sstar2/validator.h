@@ -25,8 +25,8 @@ class BaseRegions{
         void write(std::ostream &strm) const;
         // get the first chromosome
         const std::string getChromosome() const;
-        unsigned long getEnd(const std::string chromosome);
-        bool inRegion(const std::string chromosome, unsigned long position);
+        unsigned long getEnd(const std::string &chromosome);
+        bool inRegion(const std::string &chromosome, unsigned long position);
 };
 std::ostream& operator<<(std::ostream &strm, const BaseRegions region);
 
@@ -49,7 +49,6 @@ class FixationValidator : public Validator{
 
         bool isValid(const VcfEntry &entry);
         void updateCallable(BaseRegions &callable){}
-        virtual ~FixationValidator() = default;
 };
 
 class BedFile{
@@ -75,7 +74,6 @@ class PositiveBedValidator : public Validator{
 
         bool isValid(const VcfEntry &entry);
         void updateCallable(BaseRegions &callable);
-        virtual ~PositiveBedValidator() = default;
 };
 
 class NegativeBedValidator : public Validator{
@@ -87,5 +85,4 @@ class NegativeBedValidator : public Validator{
 
         bool isValid(const VcfEntry &entry);
         void updateCallable(BaseRegions &callable);
-        virtual ~NegativeBedValidator() = default;
 };

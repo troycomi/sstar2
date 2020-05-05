@@ -16,14 +16,14 @@ void SStarCaller::write_header(std::ostream &output){
 
 void SStarCaller::write_window(std::ostream &output,
                 WindowGenerator &generator){
-    unsigned int total_snps = generator.window.total_snps();
-    unsigned int ref_snps = generator.window.reference_snps();
+    unsigned int total_snps = generator.window->total_snps();
+    unsigned int ref_snps = generator.window->reference_snps();
     unsigned int callable = generator.callable_length();
     for(unsigned int i = 0; i < generator.targets.size(); ++i){
-        unsigned int indiv_snps = generator.window.individual_snps(i);
-        output << generator.window.chromosome << '\t'
-            << generator.window.start << '\t'
-            << generator.window.end << '\t'
+        unsigned int indiv_snps = generator.window->individual_snps(i);
+        output << generator.window->chromosome << '\t'
+            << generator.window->start << '\t'
+            << generator.window->end << '\t'
             << total_snps << '\t'
             << indiv_snps << '\t'
             << indiv_snps + ref_snps << '\t'
@@ -35,7 +35,7 @@ void SStarCaller::write_window(std::ostream &output,
             // build genotypes vector
             std::vector<WindowGT> genotypes;
             genotypes.reserve(indiv_snps);
-            generator.window.fill_genotypes(genotypes, i);
+            generator.window->fill_genotypes(genotypes, i);
             long s_score = sstar(genotypes);
             output << s_score << '\t'
                 << genotypes.size() << '\t';

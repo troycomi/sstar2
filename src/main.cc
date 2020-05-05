@@ -4,7 +4,8 @@
 #include <stdlib.h>
 #include <set>
 
-#include "CLI11/CLI11.hpp"
+#include <CLI/CLI.hpp>
+
 #include "sstar2/sstar.h"
 #include "sstar2/window_generator.h"
 #include "sstar2/validator.h"
@@ -84,7 +85,7 @@ int main(int argc, char** argv)
     }
     std::ostream output(buf);
 
-    WindowGenerator generator(length, step);
+    WindowGenerator generator(std::unique_ptr<Window>(new StepWindow(step, length)));
     generator.initialize(vcf, popdata, target_set, reference_set, excluded_set);
 
     // add validators
