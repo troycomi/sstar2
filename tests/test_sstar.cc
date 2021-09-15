@@ -85,22 +85,7 @@ TEST_F(SStarFixtureEmpty, CanWriteEmptyWindow){
     std::ostringstream outfile;
     generator.next_window();
     sstar.write_window(outfile, generator);
-    ASSERT_STREQ(outfile.str().c_str(),
-            // chrom, start end, snps, indiv and pop
-            "1\t0\t5\t0\t0\t0\tmsp_0\tpop0\t"
-            // sstar related stuff, callable bases
-            "0\t0\t.\t0\t0\t0\t0\t0\t0\t0\t0\t.\t5\n"
-            "1\t0\t5\t0\t0\t0\tmsp_1\tpop1\t"
-            "0\t0\t.\t0\t0\t0\t0\t0\t0\t0\t0\t.\t5\n"
-            "1\t0\t5\t0\t0\t0\tmsp_2\tpop2\t"
-            "0\t0\t.\t0\t0\t0\t0\t0\t0\t0\t0\t.\t5\n"
-            "1\t0\t5\t0\t0\t0\tmsp_3\tpop3\t"
-            "0\t0\t.\t0\t0\t0\t0\t0\t0\t0\t0\t.\t5\n"
-            "1\t0\t5\t0\t0\t0\tmsp_4\tpop4\t"
-            "0\t0\t.\t0\t0\t0\t0\t0\t0\t0\t0\t.\t5\n"
-            "1\t0\t5\t0\t0\t0\tmsp_5\tpop5\t"
-            "0\t0\t.\t0\t0\t0\t0\t0\t0\t0\t0\t.\t5\n"
-            );
+    ASSERT_STREQ(outfile.str().c_str(), "");
 }
 
 TEST_F(SStarFixtureEmpty, CanWriteEmptyWindowWithValidators){
@@ -114,22 +99,7 @@ TEST_F(SStarFixtureEmpty, CanWriteEmptyWindowWithValidators){
 
     generator.next_window();
     sstar.write_window(outfile, generator);
-    ASSERT_STREQ(outfile.str().c_str(),
-            // chrom, start end, snps, indiv and pop
-            "1\t0\t5\t0\t0\t0\tmsp_0\tpop0\t"
-            // sstar related stuff, callable bases
-            "0\t0\t.\t0\t0\t0\t0\t0\t0\t0\t0\t.\t2\n"
-            "1\t0\t5\t0\t0\t0\tmsp_1\tpop1\t"
-            "0\t0\t.\t0\t0\t0\t0\t0\t0\t0\t0\t.\t2\n"
-            "1\t0\t5\t0\t0\t0\tmsp_2\tpop2\t"
-            "0\t0\t.\t0\t0\t0\t0\t0\t0\t0\t0\t.\t2\n"
-            "1\t0\t5\t0\t0\t0\tmsp_3\tpop3\t"
-            "0\t0\t.\t0\t0\t0\t0\t0\t0\t0\t0\t.\t2\n"
-            "1\t0\t5\t0\t0\t0\tmsp_4\tpop4\t"
-            "0\t0\t.\t0\t0\t0\t0\t0\t0\t0\t0\t.\t2\n"
-            "1\t0\t5\t0\t0\t0\tmsp_5\tpop5\t"
-            "0\t0\t.\t0\t0\t0\t0\t0\t0\t0\t0\t.\t2\n"
-            );
+    ASSERT_STREQ(outfile.str().c_str(), "");
 }
 
 TEST_F(SStarFixtureNormal, CanWriteWindow){
