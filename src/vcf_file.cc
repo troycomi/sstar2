@@ -30,7 +30,7 @@ unsigned int VcfEntry::count_haplotypes(const std::vector<unsigned int> &individ
     return result;
 }
 
-unsigned int VcfFile::initialize_individuals(const std::string line,
+unsigned int VcfFile::initialize_individuals(const std::string &line,
         const std::set<std::string> &individuals){
     // matches individuals to the location in the vcf file
     // line is the header line of vcf with individual names

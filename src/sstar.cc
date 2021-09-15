@@ -16,29 +16,28 @@ void SStarCaller::write_header(std::ostream &output){
 
 void SStarCaller::write_window(std::ostream &output,
                 WindowGenerator &generator){
-    unsigned int total_snps = generator.window.total_snps();
-    unsigned int ref_snps = generator.window.reference_snps();
+    unsigned int total_snps = generator.window->total_snps();
+    if (total_snps <=2)
+        return;
+    unsigned int ref_snps = generator.window->reference_snps();
     unsigned int callable = generator.callable_length();
     for(unsigned int i = 0; i < generator.targets.size(); ++i){
-        unsigned int indiv_snps = generator.window.individual_snps(i);
-        output << generator.window.chromosome << '\t'
-            << generator.window.start << '\t'
-            << generator.window.end << '\t'
+        unsigned int indiv_snps = generator.window->individual_snps(i);
+        output << generator.window->chromosome << '\t'
+            << generator.window->start << '\t'
+            << generator.window->end << '\t'
             << total_snps << '\t'
             << indiv_snps << '\t'
             << indiv_snps + ref_snps << '\t'
             << generator.target_names[i] << '\t'
-            << generator.population.target_to_population.at(generator.target_names[i]) << '\t';
+            << generator.population_names[i] << '\t';
         if (indiv_snps <= 2)
             output << emptyline;
         else{
             // build genotypes vector
             std::vector<WindowGT> genotypes;
             genotypes.reserve(indiv_snps);
-            for(const auto &bucket : generator.window.buckets)
-                genotypes.insert(genotypes.end(),
-                        bucket.genotypes[i].begin(),
-                        bucket.genotypes[i].end());
+            generator.window->fill_genotypes(genotypes, i);
             long s_score = sstar(genotypes);
             output << s_score << '\t'
                 << genotypes.size() << '\t';

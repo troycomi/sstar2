@@ -34,7 +34,7 @@ class VcfFile{
         // map of individual to position in vcf file
         std::map <unsigned int, std::string> individual_map;
 
-        unsigned int initialize_individuals(const std::string line,
+        unsigned int initialize_individuals(const std::string &line,
                 const std::set<std::string> &individuals);
         VcfEntry initialize_entry();
         bool parse_line(const char* line, VcfEntry &entry);

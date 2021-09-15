@@ -24,3 +24,6 @@ cd build_tmp
 cmake .. -DBUILD_TESTING=True $2 
 cmake --build . 
 ctest
+
+ls tests/*_test | \
+    xargs -I{} valgrind --error-exitcode=1 --leak-check=yes ./{} --gtest_shuffle --gtest_repeat=10 > /dev/null
