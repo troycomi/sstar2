@@ -7,7 +7,7 @@ project(SStar VERSION 0.1
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-option(BUILD_TESTS "Build unit tests" OFF)
+option(BUILD_TESTING "Build unit tests" OFF)
 
 if (NOT CMAKE_BUILD_TYPE)
     message(STATUS "No build type selected, default to Release")
